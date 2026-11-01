@@ -6,7 +6,7 @@ The user's remote deletions of `AGENTS.md` and `docs/PRIVACY.md`, and README edi
 
 ## Coverage and reproducibility
 
-- Inspected all 174 tracked files, 180 unique reachable historical blobs and all seven reachable commits, including author and committer headers. Remote enumeration found one branch (`main`) and one tag (`v0.20`). Deleted documents were examined only as historical objects.
+- Scanned all 174 tracked files, 180 unique reachable historical blobs and all seven reachable commits, including author and committer headers. Focused manual review covered manifests, importer/AOT trust boundaries, virtual filesystem, diagnostics, scripts, CI and documentation; this is not a line-by-line proof of every runtime implementation. Remote enumeration found one branch (`main`) and one tag (`v0.20`). Deleted documents were examined only as historical objects.
 - Gitleaks 8.30.1, downloaded from its official release and SHA-256 verified: Git `--all --full-history`, Git `--all --reflog`, and an isolated tracked-file snapshot with archive/decode depth 2. All three scans returned exit 0 and zero secret findings. Gitleaks reported five patch-bearing commits; the independent header enumeration covered all seven commits. Gitleaks does not identify every kind of personal information.
 - Additional masked scanning covered email patterns, workstation home paths, known owner identifiers, private-key headers, token shapes and literal physical ADB serial selectors. License matches and virtual filesystem paths were manually classified.
 - Examined all five tracked binaries: three PNGs, Gradle wrapper JAR and a 66-byte smoke WASM. The wrapper JAR matches Gradle's official 8.13 wrapper checksum. All PNG chunk lists were parsed; the gameplay screenshot was also visually reviewed.
@@ -49,7 +49,11 @@ The repository is now **public**, despite the earlier private setup. The publish
 
 Each of these six commits contains an account-associated address of the form `[REDACTED]+[REDACTED]@users.noreply.github.com`; the committer is GitHub's generic service identity. The address is a GitHub no-reply alias, not a personal mailbox, but exposes account linkage and a numeric account identifier. The original root commit uses a generic project identity. The known former personal mailbox was not found in any current reachable commit or source blob. The old pre-cleanup commit endpoint again returned no matching commit in this repository.
 
-**Remedy:** project-local Git identity is already generic; GitHub web edits use the account's web identity independently. Removing the existing author aliases requires an explicitly approved, narrowly scoped history rewrite and force push, or equivalent repository replacement. Neither was performed under the user's audit rule prohibiting automatic history rewriting. A `.mailmap` would not erase raw commit headers and would itself store the original alias, so none was added.
+**Initial recommendation:** project-local Git identity is already generic; GitHub web edits use the account's web identity independently. Removing the existing author aliases requires an explicitly approved, narrowly scoped history rewrite and force push. A `.mailmap` would not erase raw commit headers and would itself store the original alias, so none was added.
+
+**Subsequent owner-approved remediation:** after reviewing the report, the owner explicitly approved rewriting only these six commits' identities. Their author and committer names/emails were replaced with generic project identities; trees, messages, dates and user deletions were verified unchanged. GitHub signatures necessarily ceased to apply and were removed. A force-with-lease constrained to the observed old main moved it to `7789ebf7d147c8d54fdb80e99e07f134c11f2d9c`. All seven active remote commits now have generic project identities. The tag, release ID and both release asset digests are unchanged. The local report/cleanup commits were reparented onto that cleaned history and remain unpushed.
+
+**Still unresolved:** direct GitHub API lookup of the old tip `19cb6181e0f30223eed0cbf2657b840b928efee3` still returns its account-associated author alias. Thus the active branch is clean, but old objects are not proven erased. Request GitHub Support review of retained objects/cached references, or discuss a separately authorized repository replacement if needed; a no-reply alias may not qualify for provider sensitive-data purging. Existing clones/downloads cannot be recalled. No repository deletion or cache-erasure guarantee is implied.
 
 ### S05 — Medium preventive control gap: secret protection is disabled
 
@@ -118,11 +122,11 @@ The retained local pre-cleanup backup is outside the active repository. It still
 
 No executable exploit was run, no unknown AOT was deserialized, no emulator/phone was used, and no heavy rebuild was started. A zero-result secret scan does not prove absence of all secrets or encoded personal data. Opaque compressed/media payloads and original game metadata cannot be exhaustively interpreted by regex. Dependency advisories are version matches until profile/reachability is established; complete transitive Gradle/Python/Android-driver vulnerability coverage remains unverified.
 
-Public visibility is now a verified current fact. Historical private-only statements in deleted documents reflected the earlier state; they were not restored or silently imposed on the owner's changed repository. No automatic attempt was made to restore privacy, delete releases or rewrite the six web commits.
+Public visibility is now a verified current fact. Historical private-only statements in deleted documents reflected the earlier state; they were not restored or silently imposed on the owner's changed repository. No automatic attempt was made to restore privacy or delete releases. The six-commit identity rewrite happened only after the owner's separate explicit approval recorded above.
 
 ## Safe-cleanup status
 
-Report prepared before cleanup. Proposed low-risk changes: S06 workflow/checksum hardening and S09 ignore guards. Engine changes, signer migration, history rewriting, file retirement, protection settings and game redistribution decisions remain outside that cleanup commit.
+Report committed before cleanup. A separate local cleanup commit addresses S06 by pinning the six Actions to the full commit IDs resolved from their existing version tags, disabling checkout credential persistence, setting a 30-minute job timeout and adding the official Gradle distribution checksum. It addresses S09 with ignore guards for generated APK/AAB/AOT/native payloads, logs and private-key containers. The root smoke WASM, license notices and user deletions are preserved. Local YAML/ignore/checksum checks and a final redacted Gitleaks scan verify these configuration changes; Actions remains disabled, so no hosted workflow execution is claimed. Engine changes, signer migration, history rewriting, file retirement, protection settings and game redistribution decisions remain outside that cleanup commit. No audit/cleanup commit has been pushed automatically.
 
 ## Matched dependency advisories
 

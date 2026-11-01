@@ -30,3 +30,20 @@ __pycache__/
 /docs/LOCAL-*
 /docs/DEVICE-*
 /docs/project/
+
+# Generated packages/native code must not be accidentally published as source.
+*.apk
+*.aab
+*.apks
+*.cwasm
+*.cwasm.bin
+*.so
+*.log
+
+# Private key/export containers; public certificates and license notices stay visible.
+*.p12
+*.pfx
+*.key
+*.pem
+adbkey
+adbkey.pub
