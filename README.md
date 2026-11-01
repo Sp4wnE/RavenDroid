@@ -73,3 +73,5 @@ See [validation](docs/VALIDATION.md), [controls](docs/CONTROLS.md), [architectur
 | `docs/` | Concise developer and user documentation |
 
 Game payloads, SDKs, dependencies, local reports and generated builds are excluded from Git. The full installable package is available through the private release. Open-source dependency notices are included in the APK.
+
+https://github.com/degloved-net/Ravenfield web port files was taken from here.
