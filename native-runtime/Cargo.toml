@@ -1,0 +1,88 @@
+[package]
+name = "ravenfield-native-host"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = ["compiler"]
+compiler = ["wasmtime/cranelift", "wasmtime/parallel-compilation"]
+# Select only ARM64 in addition to the host ISA; avoid enabling unrelated runtimes.
+aot-builder = ["compiler", "dep:cranelift-codegen", "dep:wasmparser", "dep:wasm-encoder"]
+# Isolated research example only; not enabled in Android shipping builds.
+guest-eh-prototype = ["wasmtime/gc-drc"]
+# Explicit app/JNI profiles. CLI experiments remain independently selected.
+android-app-eh = ["guest-eh-prototype"]
+android-app-inline-eager = ["android-app-eh"]
+android-app-epoch = ["android-app-eh"]
+android-async-present = []
+# Developer-only compatibility with artifacts produced by the full C API wheel.
+# Android builds exclude this feature and load only bundled, trusted ARM64 AOT.
+python-cache = ["wasmtime/gc-drc", "wasmtime/threads", "wasmtime/stack-switching", "wasmtime/component-model-async"]
+
+[lib]
+# Desktop probes need only rlib; Android scripts explicitly request cdylib.
+# Auto-exporting a debug Windows DLL can exceed PE's 65,535-export limit.
+crate-type = ["rlib"]
+
+[[bin]]
+name = "raven-native-probe"
+path = "src/main.rs"
+
+[[bin]]
+name = "raven-aot"
+path = "src/aot_main.rs"
+required-features = ["aot-builder"]
+
+[[example]]
+name = "make-invoke-benchmark"
+required-features = ["aot-builder"]
+
+[[example]]
+name = "measure-execution-guards"
+required-features = ["aot-builder"]
+
+[[example]]
+name = "analyze-invoke-targets"
+required-features = ["aot-builder"]
+
+[[example]]
+name = "prepare-leaf-invokes"
+required-features = ["aot-builder"]
+
+[[example]]
+name = "measure-guest-eh"
+required-features = ["aot-builder", "guest-eh-prototype"]
+
+[[example]]
+name = "prepare-guest-eh"
+required-features = ["aot-builder"]
+
+[[example]]
+name = "prepare-guest-atomics"
+required-features = ["aot-builder"]
+
+[dependencies]
+symphonia = { version = "=0.5.5", default-features = false, features = ["wav", "ogg", "vorbis", "mp3", "pcm", "adpcm", "isomp4", "aac"] }
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+wasmtime = { version = "=49.0.0", default-features = false, features = ["runtime", "std", "anyhow"] }
+cranelift-codegen = { version = "=0.136.0", optional = true, default-features = false, features = ["arm64"] }
+wasmparser = { version = "=0.258.3", optional = true }
+wasm-encoder = { version = "=0.258.3", optional = true, features = ["wasmparser"] }
+
+[target.'cfg(target_os = "android")'.dependencies]
+jni = "0.21"
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Graphics_OpenGL", "Win32_UI_WindowsAndMessaging", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_LibraryLoader", "Win32_System_Threading"] }
+
+[profile.release]
+opt-level = 2
+lto = "thin"
+strip = true
+
+[dev-dependencies]
+wat = "1"

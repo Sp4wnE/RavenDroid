@@ -1,0 +1,39 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'dev.ravenfield.port'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'dev.ravenfield.port'
+        minSdk 29
+        targetSdk 35
+        versionCode 2
+        versionName '0.2-startup-diagnostics'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildFeatures { buildConfig true }
+    androidResources {
+        // These files already contain gzip. Avoid double compression and allow streaming.
+        noCompress += ['unityweb', 'gz', 'bin']
+    }
+    buildTypes { debug { debuggable true } }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+tasks.register('verifyGameAssets') {
+    doLast {
+        if (!file('src/main/assets/game/manifest.json').isFile()) {
+            throw new GradleException('Game data missing. Run tools/prepare_assets.py with your authorized Ravenfield build first.')
+        }
+    }
+}
+tasks.matching { it.name.startsWith('merge') && it.name.endsWith('Assets') }.configureEach {
+    dependsOn 'verifyGameAssets'
+}

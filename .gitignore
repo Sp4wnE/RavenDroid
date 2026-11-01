@@ -1,0 +1,32 @@
+.gradle/
+**/build/
+local.properties
+app/src/main/assets/game/
+artifacts/*
+!artifacts/.gitkeep
+__pycache__/
+*.pyc
+.idea/
+*.iml
+/native-runtime/target/
+/native-android/app/src/main/jniLibs/**/*.so
+/native-runtime/target-android/
+/native-android/app/src/main/assets/native/
+
+# Local tools and credentials
+.tools/
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+
+# Local-only reports and private working records
+.private-archive/
+*.bundle
+/native-runtime/*-validation.json
+/native-runtime/*-facts.json
+/native-runtime/cleanup-*.json
+/docs/LOCAL-*
+/docs/DEVICE-*
+/docs/project/

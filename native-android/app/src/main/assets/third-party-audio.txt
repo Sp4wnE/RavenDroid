@@ -1,0 +1,8 @@
+Audio decoding uses unmodified Symphonia 0.5.5 and its enabled codec/format crates.
+Copyright (c) the Symphonia Project Developers. Licensed under Mozilla Public License 2.0.
+License: https://www.mozilla.org/MPL/2.0/
+Exact source version: https://github.com/pdeljanov/Symphonia/tree/v0.5.5
+Crate sources: https://crates.io/crates/symphonia/0.5.5
+Enabled: AAC, MP3, Vorbis, PCM, ADPCM, ISO MP4, WAV, Ogg.
+The Symphonia source files have not been modified.
+Other runtime components retain their respective licenses.

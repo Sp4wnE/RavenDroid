@@ -1,0 +1,181 @@
+{
+  "repository": "https://github.com/degloved-net/Ravenfield",
+  "commit": "8c3bf5eac6b926128d798641350ba2824488bf08",
+  "files": [
+    {
+      "path": "Build/45d1cd8c7243f6a432b90f192dcbf0d4.js",
+      "size": 40125,
+      "sha": "b3d13ec355e6cd2647215de7c07ce888f0538d17"
+    },
+    {
+      "path": "Build/7c7548a348dbf2e89fcab026fc82c25a.js.unityweb",
+      "size": 97184,
+      "sha": "728f41c66334ef4be8bf291ee29f53e52151b29f"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.000",
+      "size": 62914560,
+      "sha": "912b6fffd44b4275b104738bb9aeeed66e709f69"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.001",
+      "size": 62914560,
+      "sha": "be9c8da7b22080a3695dd435403278112ebf1063"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.002",
+      "size": 62914560,
+      "sha": "c77bb07bf1a6246613412a07697737b5f80ed328"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.003",
+      "size": 62914560,
+      "sha": "2d8f6aa6ed4a3a2f610fa32f7e68402316f774f0"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.004",
+      "size": 62914560,
+      "sha": "06acf54f20cef573894610cc49bdf05386416d65"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.005",
+      "size": 62914560,
+      "sha": "0eaf69e1efd9cd3204a51d1ba5ed893fa3f8b27b"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.006",
+      "size": 62914560,
+      "sha": "afb36dbd7f603346ff91f7296326088fbafc2f1e"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.007",
+      "size": 62914560,
+      "sha": "127d3dedbe4acee1641431e140950ab0f760434d"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.008",
+      "size": 62914560,
+      "sha": "828b0377d3bc7844f41829f108f1a65240b109b2"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.009",
+      "size": 62914560,
+      "sha": "1bf5658cefc95f93341fc01add663c86c0ecf38b"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.010",
+      "size": 62914560,
+      "sha": "cb1179419ca45f3022c6a30709f73cef7d0af3a3"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.011",
+      "size": 62914560,
+      "sha": "6e10123f5120e22420aa261efb6722fda44043a9"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.012",
+      "size": 62914560,
+      "sha": "e01b89b6468a1aff54136642701f3df0ae4150e9"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.013",
+      "size": 62914560,
+      "sha": "cb2068c0c2a907315ba0154645f0d3b8e6bdf7a7"
+    },
+    {
+      "path": "Build/81b9b315f9a925fd39279df8af81a542.data.unityweb.part.014",
+      "size": 37371625,
+      "sha": "f7d4a439badaf955730fcfd261b1a253d5cef017"
+    },
+    {
+      "path": "Build/9959b2bb0fd6fb891d64b0d84cf68883.wasm.unityweb",
+      "size": 17173539,
+      "sha": "60e360bd045a2e5c781ce87038b7bb6613a76451"
+    },
+    {
+      "path": "LICENSE",
+      "size": 1069,
+      "sha": "bfdb27b760cdf4c0e4df1427676e3b16a29866dc"
+    },
+    {
+      "path": "README.md",
+      "size": 164,
+      "sha": "faaef518f9c189b857765ad66beafc89d8ad3886"
+    },
+    {
+      "path": "StreamingAssets/dummy_lin.assetbundle",
+      "size": 2129,
+      "sha": "d043efd6ab5aceea5218c545495c478669914013"
+    },
+    {
+      "path": "StreamingAssets/dummy_osx.assetbundle",
+      "size": 2129,
+      "sha": "d7823210d32a0ea7f8c9c33dcde893600c4139e6"
+    },
+    {
+      "path": "StreamingAssets/dummy_win.assetbundle",
+      "size": 2128,
+      "sha": "afa479b23bc909ce9d89361d7b3400de8c168f15"
+    },
+    {
+      "path": "TemplateData/favicon.ico",
+      "size": 13275,
+      "sha": "dd6bf7e9cec4d87389fad00e34cd385321d748e1"
+    },
+    {
+      "path": "TemplateData/fullscreen-button.png",
+      "size": 175,
+      "sha": "e7b6496fc9c99bf761524e2b962b6de8bfca90d7"
+    },
+    {
+      "path": "TemplateData/progress-bar-empty-dark.png",
+      "size": 96,
+      "sha": "d01612f729991d6b606e9148c70014b2d5aa5a00"
+    },
+    {
+      "path": "TemplateData/progress-bar-empty-light.png",
+      "size": 109,
+      "sha": "593a32907e093f9d802865cfbb1ea46a2946bc56"
+    },
+    {
+      "path": "TemplateData/progress-bar-full-dark.png",
+      "size": 74,
+      "sha": "c432c8666d955307ec7c690ef3624e50093513fe"
+    },
+    {
+      "path": "TemplateData/progress-bar-full-light.png",
+      "size": 84,
+      "sha": "e683131ab7c4fb84dd3c70b8b0869adf11da0536"
+    },
+    {
+      "path": "TemplateData/style.css",
+      "size": 1375,
+      "sha": "78a3da1baf2318b657179505ed3e75436b1c84ab"
+    },
+    {
+      "path": "TemplateData/unity-logo-dark.png",
+      "size": 1108,
+      "sha": "597665d0c1f04e3e41222718d05827e17253cd11"
+    },
+    {
+      "path": "TemplateData/unity-logo-light.png",
+      "size": 1108,
+      "sha": "ad281ab10e41d656484ea07a27b55c09b9ce233c"
+    },
+    {
+      "path": "TemplateData/webgl-logo.png",
+      "size": 2031,
+      "sha": "ed9efa2b6bd775d622c525704cbcd7a670ff542b"
+    },
+    {
+      "path": "img.png",
+      "size": 100977,
+      "sha": "fc0389caf76898cf71edbdb6321386a6188de618"
+    },
+    {
+      "path": "index.html",
+      "size": 13167,
+      "sha": "78511c7296f2f3d683ad2a9208c1f753c6dd41a8"
+    }
+  ]
+}

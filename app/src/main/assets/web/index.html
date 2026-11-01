@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#111820">
+  <title>Ravenfield Prototype</title>
+  <link rel="stylesheet" href="port.css">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <canvas id="unity-canvas" tabindex="0" aria-label="Ravenfield oyun ekranı"></canvas>
+  <div id="launch" class="screen">
+    <div class="card">
+      <div class="eyebrow">ANDROID · OFFLINE PROTOTYPE</div>
+      <h1>RAVENFIELD</h1>
+      <p>Küçük bir harita ve düşük bot sayısıyla başlayın.</p>
+      <label>Render çözünürlüğü <select id="resolution"><option value="540">540p</option><option value="720" selected>720p</option><option value="900">900p</option></select></label>
+      <button id="start" class="primary">OYUNU BAŞLAT</button>
+      <p class="small">İlk açılış biraz sürebilir. Oyun dosyaları cihazdan yüklenir.</p>
+      <div id="progress" hidden><progress id="bar" max="1" value="0"></progress><p id="status">Hazırlanıyor…</p></div>
+      <p id="error" role="alert" hidden></p>
+    </div>
+  </div>
+  <div id="toolbar" hidden>
+    <button id="panel-button" aria-label="Port ayarları">☰</button>
+    <button id="controls-button">Touch: otomatik</button>
+    <button id="keyboard-button">123</button>
+    <span id="metrics"></span>
+  </div>
+  <div id="keyboard" hidden aria-label="Menü sayı klavyesi">
+    <p>Önce oyundaki sayı alanına dokunun.</p>
+    <div><button data-key="Digit1">1</button><button data-key="Digit2">2</button><button data-key="Digit3">3</button><button data-key="Digit4">4</button><button data-key="Digit5">5</button><button data-key="Digit6">6</button><button data-key="Digit7">7</button><button data-key="Digit8">8</button><button data-key="Digit9">9</button><button data-key="Digit0">0</button><button data-key="Backspace">⌫</button><button data-key="Enter">ENTER</button></div>
+  </div>
+  <div id="controls" hidden>
+    <div id="look" aria-label="Camera hareketi"></div>
+    <div id="joystick" aria-label="Hareket joystick"><div id="stick"></div></div>
+    <div id="actions">
+      <button data-key="KeyR">RELOAD</button>
+      <button data-key="KeyF">USE</button>
+      <button data-key="KeyC">CROUCH</button>
+      <button data-key="ShiftLeft">SPRINT</button>
+      <button data-key="Space">JUMP</button>
+      <button data-mouse="2">AIM</button>
+      <button data-mouse="0" class="fire">FIRE</button>
+    </div>
+    <div id="weapons"><button data-key="Digit1">1</button><button data-key="Digit2">2</button><button data-key="Digit3">3</button><button data-key="Digit4">4</button><button data-key="Digit5">5</button><button data-key="KeyV">VIEW</button><button data-key="KeyM">MAP</button><button data-key="Escape">ESC</button></div>
+  </div>
+  <div id="panel" class="screen" hidden>
+    <div class="card">
+      <h2>Oyun duraklatıldı</h2>
+      <label>Camera hassasiyeti <input id="sensitivity" type="range" min="0.25" max="3" step="0.05" value="1"><output id="sensitivity-value">1.00</output></label>
+      <p class="small">Sol joystick: hareket · Sağ alan: camera · AIM/FIRE: basılı tutun. Menüde doğrudan ekrana dokunun. Touch düğmesi kontrolleri manuel açıp kapatır.</p>
+      <button id="resume" class="primary">DEVAM ET</button>
+      <button id="game-menu">OYUN MENÜSÜ (ESC)</button>
+      <button id="restart">UYGULAMAYI YENİDEN YÜKLE</button>
+      <pre id="diagnostics"></pre>
+    </div>
+  </div>
+  <div id="background" class="screen" hidden><div class="card"><h2>Duraklatıldı</h2><p>Uygulamaya geri dönüldüğünde devam eder.</p></div></div>
+  <script src="input.js"></script>
+  <script src="port.js"></script>
+</body>
+</html>

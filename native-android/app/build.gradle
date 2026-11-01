@@ -1,0 +1,106 @@
+plugins { id 'com.android.application' }
+// Explicit developer-only emulator build; production assets/JNI stay untouched.
+def emulatorTest = providers.gradleProperty('ravenEmulatorTest').getOrElse('false') == 'true'
+def bundledData = providers.gradleProperty('ravenBundleData').getOrElse('false') == 'true'
+def bundledRoot = rootProject.file('../.tools/bundled-game/assets')
+def nativeAbi = emulatorTest ? 'x86_64' : 'arm64-v8a'
+def nativeTarget = emulatorTest ? 'x86_64-linux-android' : 'aarch64-linux-android'
+def emulatorRoot = rootProject.file('../.tools/emulator-app')
+def nativeAssets = emulatorTest ? new File(emulatorRoot, 'assets') : file('src/main/assets')
+def nativeLibraries = emulatorTest ? new File(emulatorRoot, 'jniLibs') : file('src/main/jniLibs')
+def manifestFile = new File(nativeAssets, 'native/manifest.json')
+def engineProfile = manifestFile.isFile() ? new groovy.json.JsonSlurper().parse(manifestFile).get('engineProfile', 'legacy') : 'legacy'
+if (!(engineProfile in ['legacy', 'guest-eh-v1', 'guest-eh-inline-eager-v1', 'guest-eh-epoch-v1']))
+    throw new GradleException('Unknown AOT engine profile')
+if (emulatorTest && gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') })
+    throw new GradleException('The emulator driver wrapper is debug-only')
+android {
+    namespace 'dev.ravenfield.nativehost'
+    compileSdk 35
+    defaultConfig {
+        applicationId emulatorTest ? 'dev.ravenfield.nativehost.emutest' : 'dev.ravenfield.nativehost'
+        minSdk 29
+        targetSdk 35
+        versionCode bundledData ? 25 : (engineProfile == 'guest-eh-epoch-v1' ? (emulatorTest ? 22 : 23) : 21)
+        versionName bundledData ? (emulatorTest ? '0.20-full-emulator' : '0.20-full') : (engineProfile == 'guest-eh-epoch-v1' ? (emulatorTest ? '0.19-epoch-emulator' : '0.19-local') : (emulatorTest && engineProfile == 'guest-eh-v1' ? '0.18-guest-eh-emulator' : '0.17-guest-intrinsics'))
+        ndk { abiFilters nativeAbi }
+        buildConfigField 'String', 'NATIVE_AOT_TARGET', '"' + nativeTarget + '"'
+        buildConfigField 'String', 'NATIVE_ENGINE_PROFILE', '"' + engineProfile + '"'
+        buildConfigField 'boolean', 'BUNDLED_GAME_DATA', bundledData.toString()
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildFeatures { buildConfig = true }
+    packaging { jniLibs { useLegacyPackaging = emulatorTest } }
+    if (emulatorTest) {
+        sourceSets.main.assets.setSrcDirs([nativeAssets])
+        sourceSets.main.jniLibs.setSrcDirs([nativeLibraries])
+        sourceSets.main.resources.setSrcDirs([new File(emulatorRoot, 'resources')])
+    }
+    if (bundledData) {
+        sourceSets.main.assets.srcDir(bundledRoot)
+        androidResources { noCompress += ['chunk'] }
+    }
+}
+dependencies { testImplementation 'junit:junit:4.13.2' }
+tasks.register('verifyNativeLibrary') {
+    doLast {
+        if (!new File(nativeLibraries, nativeAbi + '/libravenfield_native_host.so').isFile())
+            throw new GradleException('Build native-runtime for ' + nativeTarget + ' first')
+        if (!new File(nativeAssets, 'native/manifest.json').isFile())
+            throw new GradleException('Prepare trusted AOT assets for ' + nativeTarget + ' first')
+        if (!new File(nativeAssets, 'native/data-profile.json').isFile())
+            throw new GradleException('Prepare the data import profile with tools/prepare_native_data.py first')
+        def profile = new groovy.json.JsonSlurper().parse(new File(nativeAssets, 'native/manifest.json'))
+        if (profile.format != 1 || profile.target != nativeTarget || profile.runtime != 'wasmtime-49.0.0' || profile.nativeUnwindInfo != false || profile.fuel != (engineProfile != 'guest-eh-epoch-v1') || !(profile.optLevel in ['none', 'speed']))
+            throw new GradleException('AOT profile does not match this runtime target: ' + nativeTarget)
+        def dataProfile = new groovy.json.JsonSlurper().parse(new File(nativeAssets, 'native/data-profile.json'))
+        if (dataProfile.format != 1 || dataProfile.wasmSha256 != profile.wasmSha256 || dataProfile.partCount != 15 ||
+                dataProfile.dataBytes < 20 || dataProfile.dataBytes > 1200L * 1024 * 1024 ||
+                !(dataProfile.dataSha256 ==~ /[0-9a-f]{64}/))
+            throw new GradleException('Game data profile does not match the reviewed AOT build')
+        if (bundledData) {
+            def bundledManifest = new File(bundledRoot, 'bundled/manifest.json')
+            if (!bundledManifest.isFile())
+                throw new GradleException('Prepare the full APK with tools/prepare_bundled_data.py first')
+            def bundled = new groovy.json.JsonSlurper().parse(bundledManifest)
+            if (bundled.format != 1 || bundled.dataBytes != dataProfile.dataBytes || bundled.dataSha256 != dataProfile.dataSha256 ||
+                    !(bundled.parts instanceof List) || bundled.parts.size() < 1 || bundled.parts.size() > 64)
+                throw new GradleException('Bundled game data profile mismatch')
+            long total = 0
+            bundled.parts.eachWithIndex { part, index ->
+                if (part.file != String.format(java.util.Locale.ROOT, 'game.data.%03d.chunk', index))
+                    throw new GradleException('Unexpected bundled part filename')
+                def payload = new File(bundledRoot, 'bundled/' + part.file)
+                if (!payload.isFile() || payload.length() != part.bytes || part.bytes < 1 || part.bytes > 64L * 1024 * 1024)
+                    throw new GradleException('Bundled part size mismatch')
+                def checksum = java.security.MessageDigest.getInstance('SHA-256')
+                payload.withInputStream { input ->
+                    byte[] buffer = new byte[65536]; int count
+                    while ((count = input.read(buffer)) != -1) checksum.update(buffer, 0, count)
+                }
+                if (checksum.digest().encodeHex().toString() != part.sha256)
+                    throw new GradleException('Bundled part checksum mismatch')
+                total += payload.length()
+            }
+            if (total != bundled.compressedBytes) throw new GradleException('Bundled stream length mismatch')
+        }
+        ['smoke', 'unity'].each { label ->
+            def entry = profile.artifacts[label]
+            if (entry.file != "${label}.cwasm.bin") throw new GradleException('Unexpected AOT filename')
+            def artifact = new File(nativeAssets, "native/${entry.file}")
+            if (!artifact.isFile() || artifact.length() != entry.bytes) throw new GradleException('AOT artifact size mismatch')
+            def hash = java.security.MessageDigest.getInstance('SHA-256')
+            artifact.withInputStream { input ->
+                byte[] buffer = new byte[65536]
+                int count
+                while ((count = input.read(buffer)) != -1) hash.update(buffer, 0, count)
+            }
+            if (hash.digest().encodeHex().toString() != entry.sha256) throw new GradleException('AOT artifact checksum mismatch')
+        }
+    }
+}
+tasks.matching { it.name.startsWith('merge') && it.name.endsWith('Assets') }.configureEach { dependsOn 'verifyNativeLibrary' }
+tasks.matching { it.name.startsWith('merge') && it.name.endsWith('JniLibFolders') }.configureEach { dependsOn 'verifyNativeLibrary' }

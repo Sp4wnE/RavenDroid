@@ -1,0 +1,9 @@
+<resources>
+    <string name="launcher_title">Ravenfield · %1$s</string>
+    <string name="launcher_description">Oyun dosyaları cihazda hazır. Oyunu aç düğmesiyle devam et. Önceki açılışta kapanma olduysa hata raporunu kopyalayabilirsin.</string>
+    <string name="open_game">OYUNU AÇ</string>
+    <string name="preparing_game">Oyun ekranı hazırlanıyor…</string>
+    <string name="copy_report">HATA RAPORUNU KOPYALA</string>
+    <string name="show_report">HATA RAPORUNU GÖSTER</string>
+    <string name="report_copied">Rapor kopyalandı; sohbete yapıştırabilirsin.</string>
+</resources>

@@ -1,0 +1,109 @@
+<resources>
+    <string name="ui_ready_to_deploy_ec5ed" formatted="false">SAHAYA HAZIR</string>
+    <string name="ui_first_setup_91d38" formatted="false">İLK KURULUM</string>
+    <string name="ui_launch_game_5e285" formatted="false">▶   OYUNU BAŞLAT</string>
+    <string name="ui_game_files_9dedc" formatted="false">Oyun dosyaları</string>
+    <string name="ui_select_game_file_41364" formatted="false">Oyun dosyasını seç</string>
+    <string name="ui_the_prototype_is_not_installed_select_your_d8ce4" formatted="false">Kurulu prototip bulunamadı. Mevcut oyun APK / ZIP dosyanı seçebilirsin.</string>
+    <string name="ui_select_your_ravenfield_apk_or_zip_once_imp_e3030" formatted="false">Ravenfield APK / ZIP dosyanı bir kez seç. Hazırlanan içerik sonraki açılışlar için saklanır.</string>
+    <string name="ui_choose_file_3fc11" formatted="false">Dosya seç</string>
+    <string name="ui_import_from_installed_prototype_ab243" formatted="false">Kurulu prototipten aktar</string>
+    <string name="ui_make_it_yours_dc271" formatted="false">Kendine göre ayarla</string>
+    <string name="ui_controls_and_sensitivity_dd47b" formatted="false">Kontroller ve hassasiyet  ›</string>
+    <string name="ui_edit_button_layout_92a0b" formatted="false">Düğme yerleşimini düzenle  ›</string>
+    <string name="ui_audio_b3773" formatted="false">Ses  ›</string>
+    <string name="ui_game_audio_1790a" formatted="false">Oyun sesi</string>
+    <string name="ui_use_your_phone_s_media_volume_buttons_to_a_0b2e6" formatted="false">Ses düzeyini telefonunun medya ses tuşlarıyla ayarlayabilirsin.</string>
+    <string name="ui_ok_2dfaa" formatted="false">Tamam</string>
+    <string name="ui_help_and_session_report_d54b4" formatted="false">Yardım ve oturum raporu  ›</string>
+    <string name="ui_ravendroid_help_689ab" formatted="false">RavenDroid · Yardım</string>
+    <string name="ui_how_to_play_9e414" formatted="false">Nasıl oynanır?</string>
+    <string name="ui_copy_last_session_report_6e7df" formatted="false">Son oturum raporunu kopyala</string>
+    <string name="ui_diagnostic_tools_90042" formatted="false">Tanılama araçları</string>
+    <string name="ui_audio_library_license_50dcc" formatted="false">Ses kütüphanesi lisansı</string>
+    <string name="ui_deploy_8f72e" formatted="false">Sahaya çık</string>
+    <string name="ui_session_report_copied_94f93" formatted="false">Oturum raporu kopyalandı</string>
+    <string name="ui_open_source_audio_library_ddaf2" formatted="false">Açık kaynak ses kütüphanesi</string>
+    <string name="ui_could_not_read_license_file_fcd69" formatted="false">Lisans dosyası okunamadı</string>
+    <string name="ui_diagnostics_for_support_adebd" formatted="false">Tanılama · Destek için</string>
+    <string name="ui_small_arm64_test_49a39" formatted="false">Küçük ARM64 testi</string>
+    <string name="ui_unity_filesystem_test_62867" formatted="false">Unity + dosya sistemi testi</string>
+    <string name="ui_bounded_rendering_test_246a3" formatted="false">Sınırlı görüntü testi</string>
+    <string name="ui_last_rendering_test_image_40c87" formatted="false">Son oyun testi görüntüsü</string>
+    <string name="ui_preparing_29ecb" formatted="false">HAZIRLANIYOR</string>
+    <string name="ui_game_files_available_ebeba" formatted="false">OYUN DOSYALARI MEVCUT</string>
+    <string name="ui_ready_when_you_are_enable_in_game_controls_0126d" formatted="false">Hazırsan sahaya çık. Oyun içi kontrolleri üst soldan açabilirsin.</string>
+    <string name="ui_select_your_existing_ravenfield_apk_or_zip_ab713" formatted="false">Mevcut Ravenfield APK / ZIP dosyanı seç. Oyun verisi yalnızca bir kez aktarılır.</string>
+    <string name="ui_could_not_prepare_files_open_help_for_deta_5339a" formatted="false">Dosyalar hazırlanamadı. Yardım bölümünden ayrıntıları görebilirsin.</string>
+    <string name="ui_look_sensitivity_d2c60" formatted="false">Kamera hassasiyeti</string>
+    <string name="ui_aim_sensitivity_0f32a" formatted="false">Nişan hassasiyeti</string>
+    <string name="ui_button_size_cfbb1" formatted="false">Düğme boyutu</string>
+    <string name="ui_control_visibility_1cc69" formatted="false">Kontrol görünürlüğü</string>
+    <string name="ui_invert_vertical_look_e0108" formatted="false">Dikey kamerayı ters çevir</string>
+    <string name="ui_tap_to_toggle_aim_d697e" formatted="false">Nişanı dokunarak aç / kapat</string>
+    <string name="ui_tap_to_toggle_sprint_f1186" formatted="false">Koşmayı dokunarak aç / kapat</string>
+    <string name="ui_touch_controls_c6ad8" formatted="false">Dokunmatik kontroller</string>
+    <string name="ui_cancel_14d24" formatted="false">Vazgeç</string>
+    <string name="ui_save_b8094" formatted="false">Kaydet</string>
+    <string name="ui_save_01b2b" formatted="false">KAYDET</string>
+    <string name="ui_reset_4a8fc" formatted="false">SIFIRLA</string>
+    <string name="ui_cancel_20763" formatted="false">VAZGEÇ</string>
+    <string name="ui_vehicle_on_foot_e5ddf" formatted="false">ARAÇ → YAYA</string>
+    <string name="ui_on_foot_vehicle_fa3fd" formatted="false">YAYA → ARAÇ</string>
+    <string name="ui_size_opacity_267f4" formatted="false">BOYUT / OPAKLIK</string>
+    <string name="ui_opacity_67e55" formatted="false">Opaklık</string>
+    <string name="ui_drag_buttons_tap_to_adjust_8f616" formatted="false">Düğmeleri sürükle · Ayarlamak için dokun</string>
+    <string name="ui_touch_menus_a4ea9" formatted="false">MENÜYE DOKUN</string>
+    <string name="ui_enable_controls_580d7" formatted="false">KONTROLLERİ AÇ</string>
+    <string name="ui_options_a13f4" formatted="false">SEÇENEKLER</string>
+    <string name="ui_touch_movement_camera_and_action_buttons_t_0efc8" formatted="false">Dokunmatik hareket, kamera ve oyun düğmeleri. Üst soldan kontrolleri açıp kapat; üst sağdan seçenekler.</string>
+    <string name="ui_preparing_the_game_the_first_launch_can_ta_9d11b" formatted="false">Oyun hazırlanıyor… İlk açılış birkaç dakika sürebilir.</string>
+    <string name="ui_loading_game_content_b6921" formatted="false">Oyun içeriği yükleniyor…</string>
+    <string name="ui_could_not_read_session_status_901cc" formatted="false">Oturum durumu okunamadı</string>
+    <string name="ui_resume_game_a6329" formatted="false">Oyuna dön</string>
+    <string name="ui_touch_menus_805ee" formatted="false">Menülere dokun</string>
+    <string name="ui_configure_controls_d0cf0" formatted="false">Kontrolleri ayarla</string>
+    <string name="ui_edit_button_layout_edaa6" formatted="false">Düğme yerleşimini düzenle</string>
+    <string name="ui_return_to_launcher_2a9bb" formatted="false">Launcher’a dön</string>
+    <string name="ui_waiting_for_the_previous_native_session_to_4b552" formatted="false">Önceki native oturumun durması bekleniyor…</string>
+    <string name="ui_the_game_session_ended_return_to_the_launc_1c13d" formatted="false">Oyun oturumu sona erdi. Seçeneklerden launcher’a dön; rapor Yardım bölümüne kaydedildi.</string>
+    <string name="ui_the_native_game_thread_ended_unexpectedly_a3c86" formatted="false">Canlı native iş parçacığı beklenmedik şekilde sonlandı.</string>
+    <string name="ui_preparing_native_game_session_529e8" formatted="false">Canlı native oturum hazırlanıyor…</string>
+    <string name="ui_the_game_session_was_stopped_before_starti_fea94" formatted="false">Canlı oturum başlatılmadan kapatıldı.</string>
+    <string name="ui_game_session_error_cc8c3" formatted="false">Canlı oturum hatası: </string>
+    <string name="ui_ravendroid_b77d3" formatted="false">RavenDroid</string>
+    <string name="ui_choose_play_instant_action_select_a_map_an_2c16c" formatted="false">Play → Instant Action ile haritayı seç ve Deploy’a bas. Doğduktan sonra üst soldan kontrolleri aç. Sol joystick hareket ettirir, sağ alan kamerayı çevirir. Ateş düğmesini tutup sürükleyebilirsin. Düğme yerlerini seçeneklerden düzenleyebilirsin. Üstte YAYA / ARAÇ ile kontrol profilini değiştir. Araçta sol yön tuşlarıyla dön, sağda gaz/fren kullan. Sağ alan kule/kamera ve uçuş kontrolüdür. K1–K7 koltuk seçer; SAVUNMA yalnızca destekleyen araçlarda çalışır.</string>
+    <string name="ui_left_thumb_movement_right_area_look_hold_a_0ef50" formatted="false">Sol başparmak: hareket. Sağ alan: kamera. Ateş düğmesini basılı tutup sürükleyerek de bakabilirsin. Araçta gaz/freni bırakmadan sürükleyerek bakabilir, yön okları arasında kaydırabilirsin. Teçhizat düğmesi silah seçimini açar. Menüye geçerken bütün basılı tuşlar bırakılır.</string>
+    <string name="control_fire">ATEŞ</string>
+    <string name="control_aim">NİŞAN</string>
+    <string name="control_jump">ZIPLA</string>
+    <string name="control_reload">DOLDUR</string>
+    <string name="control_crouch">EĞİL</string>
+    <string name="control_use">KULLAN</string>
+    <string name="control_sprint">KOŞ</string>
+    <string name="control_map">HARİTA</string>
+    <string name="control_loadout">TEÇHİZAT ↵</string>
+    <string name="control_throttle">GAZ</string>
+    <string name="control_brake_reverse">FREN / GERİ</string>
+    <string name="control_enter_exit">BİN / İN</string>
+    <string name="control_camera">KAMERA</string>
+    <string name="control_countermeasures">SAVUNMA</string>
+    <string name="control_weapon_1">SİLAH 1</string>
+    <string name="control_weapon_2">SİLAH 2</string>
+    <string name="control_s1">K1</string>
+    <string name="control_s2">K2</string>
+    <string name="control_s3">K3</string>
+    <string name="control_s4">K4</string>
+    <string name="control_s5">K5</string>
+    <string name="control_s6">K6</string>
+    <string name="control_s7">K7</string>
+    <string name="ui_joystick_size_da33f" formatted="false">Joystick boyutu</string>
+    <string name="ui_returning_to_launcher">Başlatıcıya dönülüyor…</string>
+    <string name="ui_bundled_game_info">Oyun dosyaları dahildir. İlk açılışta otomatik hazırlanır; indirme veya dosya seçme gerekmez.</string>
+    <string name="ui_prepare_game_files">Oyun dosyalarını hazırla / doğrula</string>
+    <string name="ui_preparing_bundled_game">Dahil edilen oyun dosyaları hazırlanıyor…</string>
+    <string name="ui_bundled_game_progress">Oyun dosyaları hazırlanıyor: %1$d%%</string>
+    <string name="ui_bundled_game_ready">Oyun hazır. Şimdi başlatabilirsin.</string>
+    <string name="ui_bundled_game_failed">Oyun dosyaları hazırlanamadı. Boş alanı kontrol edip yeniden hazırla.</string>
+    <string name="ui_bundled_game_storage">Oyunu hazırlamak için yaklaşık 1,5 GB ek boş alan gerekiyor.</string>
+</resources>
