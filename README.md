@@ -3,7 +3,9 @@
 
 # RavenDroid
 
-**A native Android host for a Unity WebAssembly game**
+**A native port of Ravenfield Web port to Android.
+
+THIS PORT IS FULLY VIBECODED AND PROBABLY WONT GET ANY MORE UPDATES.**
 
 Android 10+ · ARM64 · Wasmtime AOT · OpenGL ES 3 · Rust + Java
 
