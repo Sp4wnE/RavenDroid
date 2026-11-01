@@ -3,7 +3,7 @@
 
 # RavenDroid
 
-**A native port of Ravenfield Web port to Android.**
+**A native Android port of Ravenfield WebPort.**
 
 **THIS PORT IS FULLY VIBECODED AND PROBABLY WONT GET ANY MORE UPDATES.**
 
