@@ -51,7 +51,7 @@ Android launcher
                   └── queued touch and keyboard input
 ```
 
-This is a native host for a pinned WebAssembly build, not a rebuild from the original Unity project. It is not an official Ravenfield release.
+This is a native host for a pinned WebAssembly build, not a rebuild from the original Unity project. It is not an official Ravenfield release. It is also based on an older Ravenfield build that was ported to web.
 
 ## Validation and limitations
 
