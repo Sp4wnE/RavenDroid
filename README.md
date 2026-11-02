@@ -24,7 +24,6 @@ RavenDroid runs a reviewed Unity WebGL build outside the browser using ahead-of-
 ## Install and play
 
 1. Download the **full ARM64 APK** from [Releases](../../releases/latest), approximately **1.02GB**.
-2. Install it over the existing app to preserve saves and control layouts.
 3. Launch RavenDroid and wait for the automatic preparation to finish. No separate game file or download is required.
 4. Select **Launch game**, then use **Instant Action → Play → Deploy** in the game.
 
