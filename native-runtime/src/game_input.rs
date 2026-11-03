@@ -4,13 +4,15 @@ use wasmtime::{Store,Instance};
 #[derive(Default)]pub(super) struct State{keys:std::collections::BTreeSet<u32>,pub events:u64}
 pub(super) fn shift(host:&Host)->bool{host.game_input.keys.contains(&16)}
 pub(super) fn report(host:&Host)->serde_json::Value{serde_json::json!({"operations":host.game_input.events,"held_keys":host.game_input.keys})}
-pub(crate) fn supported(code:u32)->bool{matches!(code,13|16|17|27|32|49..=53|65|67|68|69|70|77|81|82|83|87|88|112..=118)}
+pub(crate) fn supported(code:u32)->bool{matches!(code,8|9|13|16|17|18|27|32|37..=40|48..=57|65..=90|112..=122)}
 fn key(code:u32,down:bool,shift:bool)->Key{
     let(name,physical,location)=match code{
         13=>("Enter".into(),"Enter".into(),0),16=>("Shift".into(),"ShiftLeft".into(),1),
         17=>("Control".into(),"ControlLeft".into(),1),27=>("Escape".into(),"Escape".into(),0),32=>(" ".into(),"Space".into(),0),
-        112..=118=>(format!("F{}",code-111),format!("F{}",code-111),0),
-        49..=53=>((code as u8 as char).to_string(),format!("Digit{}",code as u8 as char),0),
+        8=>("Backspace".into(),"Backspace".into(),0),9=>("Tab".into(),"Tab".into(),0),18=>("Alt".into(),"AltLeft".into(),1),
+        37=>("ArrowLeft".into(),"ArrowLeft".into(),0),38=>("ArrowUp".into(),"ArrowUp".into(),0),39=>("ArrowRight".into(),"ArrowRight".into(),0),40=>("ArrowDown".into(),"ArrowDown".into(),0),
+        112..=122=>(format!("F{}",code-111),format!("F{}",code-111),0),
+        48..=57=>((code as u8 as char).to_string(),format!("Digit{}",code as u8 as char),0),
         _=>((code as u8 as char).to_ascii_lowercase().to_string(),format!("Key{}",code as u8 as char),0),
     };Key{event:if down{2}else{3},key:name,code:physical,location,key_code:code,modifiers:[false,shift,false,false],..Default::default()}
 }
@@ -25,7 +27,7 @@ pub(super) fn deliver(store:&mut Store<Host>,instance:&Instance,event:GameEvent)
             anyhow::ensure!(supported(code),"Unsupported virtual key");
             let changed=if down{store.data_mut().game_input.keys.insert(code)}else{store.data_mut().game_input.keys.remove(&code)};
             if changed{let shift=store.data().game_input.keys.contains(&16);let mut event=key(code,down,shift);
-                event.modifiers[0]=store.data().game_input.keys.contains(&17);
+                event.modifiers[0]=store.data().game_input.keys.contains(&17);event.modifiers[1]=store.data().game_input.keys.contains(&16);event.modifiers[2]=store.data().game_input.keys.contains(&18);
                 super::input::deliver(store,instance,event)?;}
         }
         GameEvent::Button{button,down}=>super::pointer::button(store,instance,button,down)?,
@@ -39,7 +41,7 @@ pub(super) fn deliver(store:&mut Store<Host>,instance:&Instance,event:GameEvent)
         let enter=key(13,true,false);assert_eq!(enter.key,"Enter");assert_eq!(enter.code,"Enter");assert_eq!(enter.key_code,13);
         let crouch=key(17,true,false);assert_eq!(crouch.key,"Control");assert_eq!(crouch.code,"ControlLeft");assert_eq!(crouch.location,1);
         for code in 112..=118{assert!(supported(code));let k=key(code,true,false);assert_eq!(k.key,format!("F{}",code-111));assert_eq!(k.code,k.key);assert_eq!(k.key_code,code);}
-        assert!(supported(88));assert!(!supported(119));
+        assert!(supported(88));assert!(supported(119));assert!(!supported(123));
     }
     #[test]fn keyboard_and_two_mouse_buttons_share_real_callbacks_and_reset_releases_everything(){
         let names=["keydown","keyup","mousedown","mouseup","mousemove"];

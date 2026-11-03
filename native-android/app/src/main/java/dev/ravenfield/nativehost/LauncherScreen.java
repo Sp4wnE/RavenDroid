@@ -20,6 +20,8 @@ final class LauncherScreen {
         if(android.os.Build.VERSION.SDK_INT>=30){root.setOnApplyWindowInsetsListener((view,insets)->{android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());view.setPadding(bars.left,bars.top,bars.right,bars.bottom);return WindowInsets.CONSUMED;});root.requestApplyInsets();}else root.setFitsSystemWindows(true);
         ScrollView scroll=new ScrollView(activity);scroll.setFillViewport(true);root.addView(scroll,new LinearLayout.LayoutParams(-1,-1));
         LinearLayout column=new LinearLayout(activity);column.setOrientation(LinearLayout.VERTICAL);column.setPadding(dp(22),dp(28),dp(22),dp(32));scroll.addView(column);
+        Button about=new Button(activity);about.setText("?");about.setTextSize(22);about.setContentDescription(activity.getString(R.string.ui_port_notice_title));
+        LinearLayout.LayoutParams aboutLayout=new LinearLayout.LayoutParams(dp(52),dp(48));aboutLayout.gravity=Gravity.END;column.addView(about,aboutLayout);about.setOnClickListener(view->PortNotice.show(activity));
         ImageView logo=new ImageView(activity);logo.setImageResource(R.drawable.ravenfield_logo);logo.setContentDescription(activity.getString(R.string.ui_ravendroid_b77d3));logo.setAdjustViewBounds(true);logo.setScaleType(ImageView.ScaleType.FIT_CENTER);column.addView(logo,new LinearLayout.LayoutParams(-1,dp(190)));
         TextView tagline=label("MOBILE  /  "+BuildConfig.VERSION_NAME.split("-",2)[0],11,0xff83a9cf);tagline.setLetterSpacing(.14f);tagline.setPadding(0,dp(8),0,dp(28));column.addView(tagline);
         LinearLayout ready=card(column);ready.addView(label(activity.getString(R.string.ui_ready_to_deploy_ec5ed),20,0xfff1f3f7));
@@ -33,6 +35,8 @@ final class LauncherScreen {
         installed=button(activity.getString(R.string.ui_import_from_installed_prototype_ab243),0xff191f28,importInstalled);files.addView(installed);
         if(BuildConfig.BUNDLED_GAME_DATA)installed.setVisibility(View.GONE);
         LinearLayout settings=card(column);settings.addView(label(activity.getString(R.string.ui_make_it_yours_dc271),20,0xfff1f3f7));
+        settings.addView(button(activity.getString(R.string.ui_render_resolution),0xff252d39,()->RenderSettings.show(activity)));
+        settings.addView(button(activity.getString(R.string.ui_hardware_help_title),0xff252d39,()->new AlertDialog.Builder(activity).setTitle(R.string.ui_hardware_help_title).setMessage(R.string.ui_hardware_help).setPositiveButton(android.R.string.ok,null).show()));
         settings.addView(button(activity.getString(R.string.ui_controls_and_sensitivity_dd47b),0xff252d39,()->ControlPreferences.show(activity,null)));
         settings.addView(button(activity.getString(R.string.ui_edit_button_layout_92a0b),0xff252d39,()->activity.startActivity(new android.content.Intent(activity,ControlEditorActivity.class))));
         settings.addView(button(activity.getString(R.string.ui_audio_b3773),0xff252d39,()->new AlertDialog.Builder(activity).setTitle(activity.getString(R.string.ui_game_audio_1790a)).setMessage(activity.getString(R.string.ui_use_your_phone_s_media_volume_buttons_to_a_0b2e6)).setPositiveButton(activity.getString(R.string.ui_ok_2dfaa),null).show()));

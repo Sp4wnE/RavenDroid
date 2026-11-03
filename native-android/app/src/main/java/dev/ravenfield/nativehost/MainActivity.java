@@ -46,6 +46,7 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         buildLauncher();
+        if(state==null)PortNotice.show(this);
         String previous=getPreferences(MODE_PRIVATE).getString("lastReport","");
         boolean pending=getPreferences(MODE_PRIVATE).getBoolean("pending",false);
         setReport(previous.isEmpty()?deviceReport():previous);

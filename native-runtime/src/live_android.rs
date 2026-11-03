@@ -19,7 +19,7 @@ use std::path::Path;
     let text=registry::get(id as u64).map(|control|control.status()).unwrap_or_else(||serde_json::json!({"stopped":true})).to_string();
     env.new_string(text).map(|value|value.into_raw()).unwrap_or(std::ptr::null_mut())
 }
-#[unsafe(no_mangle)]pub extern "system" fn Java_dev_ravenfield_nativehost_GameActivity_runLiveNative(mut env:JNIEnv,_class:JClass,id:jlong,surface:JObject,path:JString,log:JString,data:JString)->jstring{
+#[unsafe(no_mangle)]pub extern "system" fn Java_dev_ravenfield_nativehost_GameActivity_runLiveNative(mut env:JNIEnv,_class:JClass,id:jlong,surface:JObject,path:JString,log:JString,data:JString,width:jint,height:jint)->jstring{
     let result=std::panic::catch_unwind(std::panic::AssertUnwindSafe(||->anyhow::Result<String>{
         let _execution=registry::Execution::enter(Some(id as u64))?;
         let control=registry::get(id as u64).ok_or_else(||anyhow::anyhow!("Live session no longer exists"))?;
@@ -27,7 +27,8 @@ use std::path::Path;
         let path:String=env.get_string(&path)?.into();let log:String=env.get_string(&log)?.into();let data:String=env.get_string(&data)?.into();
         let progress=Progress::at(Path::new(&log));progress.record("live-jni-enter");
         let window=super::graphics::NativeWindow::from_surface(&env,&surface)?;
-        let options=super::ProbeOptions{guest_eh:super::android_profile::GUEST_EH,inline_eager_codegen:super::android_profile::INLINE_EAGER,epoch_guard:super::android_profile::EPOCH_GUARD,save_state:Some(Path::new(&data).with_file_name("native-saves.bin")),android_gles:true,android_window:Some(window),control:Some(control),headless_events:true,native_audio:true,startup_fuel:Some(50_000_000_000),frame_fuel:Some(50_000_000_000),..Default::default()};
+        anyhow::ensure!(super::viewport::supported(width,height),"Unsupported launcher resolution");
+        let options=super::ProbeOptions{render_size:(width,height),guest_eh:super::android_profile::GUEST_EH,inline_eager_codegen:super::android_profile::INLINE_EAGER,epoch_guard:super::android_profile::EPOCH_GUARD,save_state:Some(Path::new(&data).with_file_name("native-saves.bin")),android_gles:true,android_window:Some(window),control:Some(control),headless_events:true,native_audio:true,startup_fuel:Some(50_000_000_000),frame_fuel:Some(50_000_000_000),..Default::default()};
         let report=super::probe_impl(&path,None,true,&progress,Some(&data),options)?;
         progress.record("live-jni-returned");Ok(serde_json::to_string_pretty(&report)?)
     }));

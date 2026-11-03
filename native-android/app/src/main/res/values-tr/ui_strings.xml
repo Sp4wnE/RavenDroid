@@ -106,4 +106,15 @@
     <string name="ui_bundled_game_ready">Oyun hazır. Şimdi başlatabilirsin.</string>
     <string name="ui_bundled_game_failed">Oyun dosyaları hazırlanamadı. Boş alanı kontrol edip yeniden hazırla.</string>
     <string name="ui_bundled_game_storage">Oyunu hazırlamak için yaklaşık 1,5 GB ek boş alan gerekiyor.</string>
+    <string name="ui_port_notice_title">Resmî RavenDroid sürümü</string>
+    <string name="ui_port_notice_message">Bu Android portu SP4WNE tarafından geliştirilmiştir ve resmî olarak yalnızca GitHub üzerinden yayımlanmaktadır. Diğer kaynaklardan indirilen kopyalar SP4WNE tarafından sağlanmaz veya doğrulanmaz. Sürümler ve güncellemeler için resmî depoyu kullanın.</string>
+    <string name="ui_notice_understood">Anladım</string>
+    <string name="ui_notice_github">GitHub’a git</string>
+    <string name="ui_no_browser">Bu bağlantıyı açabilecek bir uygulama bulunamadı.</string>
+    <string name="ui_render_resolution">Render çözünürlüğü</string>
+    <string name="ui_resolution_next_game">Kaydedildi. Oyunu bir sonraki başlatışınızda uygulanır. Grafik yükü yüksek olduğunda düşük çözünürlük yardımcı olabilir.</string>
+    <string name="ui_hardware_help_title">Gamepad, klavye ve fare</string>
+    <string name="ui_hardware_help">Klavye: WASD hareket, fare kamera, sol/sağ fare ateş/nişan, R doldur, Boşluk zıpla, Ctrl eğil, Shift koş, F kullan, Enter teçhizat, 1–5 ekipman. Fare tekerleği ekipman değiştirir.\n\nF12 veya gamepad Select, oyun kontrolleri ile menüler arasında geçiş yapar. Menülerde sol çubuk veya yön tuşları imleci taşır, A seçer.\n\nGamepad: sol çubuk hareket, sağ çubuk kamera, RT ateş, LT nişan, A zıpla, B eğil, X doldur, Y teçhizat, L3 koş, R3 kullan. LB/RB ekipman değiştirir. Yön tuşları: yukarı harita, aşağı yat, sol/sağ yana eğil. Start veya Escape duraklatır.\n\nUSB ve Bluetooth cihazları Android giriş desteğini kullanır. Odak kaybında veya cihaz bağlantısı kesildiğinde basılı kontroller bırakılır.</string>
+    <string name="ui_hardware_gameplay">Oyun kontrolleri açık. Select / F12 ile menülere dönün.</string>
+    <string name="ui_hardware_menus">Menü imleci açık. Select / F12 ile oyun kontrollerine dönün.</string>
 </resources>

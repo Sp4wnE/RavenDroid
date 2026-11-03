@@ -106,4 +106,15 @@
     <string name="ui_bundled_game_ready">Game ready. You can launch it now.</string>
     <string name="ui_bundled_game_failed">Could not prepare the game files. Check free storage and try preparing again.</string>
     <string name="ui_bundled_game_storage">About 1.5 GB of additional free storage is required to prepare the game.</string>
+    <string name="ui_port_notice_title">Official RavenDroid release</string>
+    <string name="ui_port_notice_message">This Android port was developed by SP4WNE and is officially distributed only through GitHub. Copies downloaded from other sources are not provided or verified by SP4WNE. Use the official repository for releases and updates.</string>
+    <string name="ui_notice_understood">Understood</string>
+    <string name="ui_notice_github">Open GitHub</string>
+    <string name="ui_no_browser">No app is available to open this link.</string>
+    <string name="ui_render_resolution">Render resolution</string>
+    <string name="ui_resolution_next_game">Saved. Applies when you next launch the game. Lower resolutions may help when graphics performance is limited.</string>
+    <string name="ui_hardware_help_title">Gamepad, keyboard and mouse</string>
+    <string name="ui_hardware_help">Keyboard: WASD, mouse look, left/right mouse fire/aim, R reload, Space jump, Ctrl crouch, Shift sprint, F use, Enter loadout, 1–5 equipment. Mouse wheel cycles equipment.\n\nF12 or gamepad Select switches between game controls and menus. In menus, the left stick or D-pad moves the cursor and A selects.\n\nGamepad: left stick moves, right stick looks, RT fires, LT aims, A jumps, B crouches, X reloads, Y opens loadout, L3 sprints, R3 uses. LB/RB cycles equipment. D-pad: up map, down prone, left/right lean. Start or Escape opens pause.\n\nUSB and Bluetooth devices use Android input support. Controls held when focus is lost or a device disconnects are released.</string>
+    <string name="ui_hardware_gameplay">Game controls enabled. Select / F12 returns to menus.</string>
+    <string name="ui_hardware_menus">Menu cursor enabled. Select / F12 returns to game controls.</string>
 </resources>

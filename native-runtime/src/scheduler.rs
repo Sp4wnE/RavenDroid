@@ -66,7 +66,10 @@ pub(super) fn run(store:&mut Store<Host>,instance:&Instance,limit:u32,fuel:u64,p
             }
             let events=store.data().scripted_game.iter().filter(|(at,_)|*at==frame).map(|(_,event)|*event).collect::<Vec<_>>();
             for event in events{control.push_game(event);}
-            for event in control.drain_frame(){super::pointer::deliver(store,instance,event)?;}
+            for mut event in control.drain_frame(){
+                if let Some(graphics)=store.data().graphics.as_ref(){let (width,height)=graphics.dimensions();(event.x,event.y)=super::viewport::point(event.x,event.y,width,height);}
+                super::pointer::deliver(store,instance,event)?;
+            }
             for event in control.drain_game(){super::game_input::deliver(store,instance,event)?;}
             control.callbacks.store(store.data().pointer.callbacks,std::sync::atomic::Ordering::Relaxed);
             if !active(store.data()){break;}

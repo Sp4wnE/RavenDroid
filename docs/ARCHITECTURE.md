@@ -20,3 +20,9 @@ The optional `ravenBundleData` build includes a gzip stream split into small opa
 The current engine uses `guest-eh-epoch-v1`: guest exception boundaries and a 10 ms epoch watchdog, with a 60 s startup and 30 s callback deadline. Serialized AOT, manifest and exported JNI profile must match. Legacy fuel profiles remain separate. Never load arbitrary downloaded AOT artifacts.
 
 Native optimization work includes typed GL imports, conservative state caches, deadline pacing and compressed-texture capability detection from actual supported formats. The full package reuses that engine. Experimental emulator presentation settings are not enabled in the phone build.
+
+## Input and resolution (0.21)
+
+The launcher persists one of 640×360, 960×540 or 1280×720 (default). Each new GameActivity passes its selected dimensions through JNI to the native window/FBO; guest canvas/screen queries report that size. Live canvas resolution is owned by the launcher. UI touch layouts retain logical 1280×720 coordinates; the owner-thread scheduler maps absolute pointer events to the render dimensions. Relative mouse input remains relative, with cursor bounds matching the selected canvas.
+
+HardwareInput adapts Android keyboard, mouse/pointer-capture and controller events into the existing keyboard/mouse ABI. HardwareControls tracks individual device/action ownership and timed stick motion; GameInputMixer combines touch and hardware holds. Device removal, mode/focus changes and queue failures release held input. The game Activity handles keyboard/navigation configuration changes to preserve its VM/session during input-device hotplug. No new game engine or arbitrary AOT input path is introduced.

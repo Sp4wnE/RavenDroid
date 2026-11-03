@@ -18,6 +18,7 @@ mod calendar;
 mod pointer;
 mod session;
 mod game_input;
+mod viewport;
 mod services;
 #[cfg(target_os="android")]mod live_android;
 #[cfg(target_os="android")]mod android_performance;
@@ -91,6 +92,8 @@ pub struct ProbeOptions {
     pub(crate) control:Option<std::sync::Arc<session::Control>>,
     #[cfg(target_os="android")]pub(crate) android_window:Option<std::sync::Arc<graphics::NativeWindow>>,
     pub android_gles: bool,
+    /// Launcher-selected live canvas. (0,0) preserves the diagnostic default.
+    pub render_size:(i32,i32),
     pub headless_audio: bool,
     pub native_audio:bool,
     pub audio_wav:Option<std::path::PathBuf>,
@@ -732,7 +735,9 @@ fn probe_impl(path: &str, framework: Option<&str>, compiled: bool, progress: &di
     if let Some(control)=store.data().control.clone(){if let Some(audio)=store.data_mut().audio.as_mut(){audio.muted=control.audio_muted.clone();}}
     #[cfg(target_os="android")]
     if options.android_gles {
-        store.data_mut().graphics=Some(if let Some(window)=options.android_window.clone(){graphics::Graphics::window(window,1280,720)?}else{graphics::Graphics::offscreen(1280,720)?});
+        let (width,height)=if options.render_size==(0,0){(1280,720)}else{options.render_size};
+        anyhow::ensure!(viewport::supported(width,height),"Unsupported render resolution");
+        store.data_mut().graphics=Some(if let Some(window)=options.android_window.clone(){graphics::Graphics::window(window,width,height)?}else{graphics::Graphics::offscreen(width,height)?});
         store.data_mut().live=options.android_window.is_some();
     }
     if let Some(path)=data {

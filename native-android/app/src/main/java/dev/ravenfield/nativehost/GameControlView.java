@@ -10,6 +10,9 @@ final class GameControlView extends View {
     private boolean vehicle;private ControlConfig footDraft,vehicleDraft;
     private boolean editing;private Runnable editDone;private int selected=-1,dragPointer=-1;private float dragX,dragY,downX,downY;private boolean moved;
     private GameControls controls;private boolean playing;private int toolbarPointer=-1,toolbarSide;
+    private Runnable modeListener=()->{};private boolean externalCursor;private int cursorX,cursorY;
+    void setModeListener(Runnable listener){modeListener=listener;}
+    void cursor(boolean visible,int x,int y){externalCursor=visible;cursorX=x;cursorY=y;invalidate();}
     GameControlView(Context context,GameControls.Sink sink,Runnable menu){super(context);this.sink=sink;this.menu=menu;buttonLabels=ControlLabels.load(context);reload();setContentDescription(getContext().getString(R.string.ui_touch_movement_camera_and_action_buttons_t_0efc8));}
     void reload(){if(controls!=null)controls.cancel();controls=new GameControls(ControlPreferences.load(getContext(),vehicle),sink);invalidate();}
     void edit(Runnable done){releaseAll();footDraft=ControlPreferences.load(getContext(),false);vehicleDraft=ControlPreferences.load(getContext(),true);controls=new GameControls(vehicle?vehicleDraft:footDraft,sink);editing=true;editDone=done;selected=-1;invalidate();}
@@ -36,8 +39,8 @@ final class GameControlView extends View {
         else if(a==MotionEvent.ACTION_CANCEL)dragPointer=-1;return true;
     }
     boolean playing(){return playing;}
-    void setPlaying(boolean value){controls.cancel();playing=value;invalidate();}
-    void resumePlaying(boolean value){playing=value;invalidate();}
+    void setPlaying(boolean value){controls.cancel();playing=value;modeListener.run();invalidate();}
+    void resumePlaying(boolean value){playing=value;modeListener.run();invalidate();}
     void releaseAll(){controls.cancel();toolbarPointer=-1;invalidate();}
     @Override protected void onMeasure(int w,int h){int[] size=TouchRouter.fit(MeasureSpec.getSize(w),MeasureSpec.getSize(h));setMeasuredDimension(size[0],size[1]);}
     private float x(MotionEvent e,int index){return e.getX(index)*1280/getWidth();}
@@ -78,6 +81,7 @@ final class GameControlView extends View {
             paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(2);paint.setColor((Math.round(controls.config.joyOpacity*255)<<24)|0xdce8f4);canvas.drawCircle(controls.joyX,controls.joyY,84*scale*controls.config.joySize,paint);
             paint.setStyle(Paint.Style.FILL);paint.setColor((Math.round(controls.config.joyOpacity*255)<<24)|0xdce8f4);canvas.drawCircle(controls.joyX+controls.joyDx,controls.joyY+controls.joyDy,30*scale*controls.config.joySize,paint);}
         }
+        if(externalCursor&&!playing&&!editing){paint.setStyle(Paint.Style.STROKE);paint.setColor(Color.WHITE);paint.setStrokeWidth(2);canvas.drawCircle(cursorX,cursorY,9,paint);canvas.drawLine(cursorX-14,cursorY,cursorX+14,cursorY,paint);canvas.drawLine(cursorX,cursorY-14,cursorX,cursorY+14,paint);}
         canvas.restore();
     }
     @Override protected void onDetachedFromWindow(){releaseAll();super.onDetachedFromWindow();}

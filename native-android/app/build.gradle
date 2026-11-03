@@ -21,8 +21,8 @@ android {
         applicationId emulatorTest ? 'dev.ravenfield.nativehost.emutest' : 'dev.ravenfield.nativehost'
         minSdk 29
         targetSdk 35
-        versionCode bundledData ? 25 : (engineProfile == 'guest-eh-epoch-v1' ? (emulatorTest ? 22 : 23) : 21)
-        versionName bundledData ? (emulatorTest ? '0.20-full-emulator' : '0.20-full') : (engineProfile == 'guest-eh-epoch-v1' ? (emulatorTest ? '0.19-epoch-emulator' : '0.19-local') : (emulatorTest && engineProfile == 'guest-eh-v1' ? '0.18-guest-eh-emulator' : '0.17-guest-intrinsics'))
+        versionCode bundledData ? 27 : 26
+        versionName bundledData ? (emulatorTest ? '0.21-full-emulator' : '0.21-full') : (emulatorTest ? '0.21-emulator' : '0.21-local')
         ndk { abiFilters nativeAbi }
         buildConfigField 'String', 'NATIVE_AOT_TARGET', '"' + nativeTarget + '"'
         buildConfigField 'String', 'NATIVE_ENGINE_PROFILE', '"' + engineProfile + '"'

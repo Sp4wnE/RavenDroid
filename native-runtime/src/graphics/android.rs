@@ -139,7 +139,9 @@ impl Context{
     pub(super) fn cursor_visible(&self,_visible:bool)->Result<()>{Ok(())} // Pbuffer has no pointer cursor.
     pub(super) fn resize(&mut self,width:i32,height:i32)->Result<()>{
         ensure!((1..=8192).contains(&width)&&(1..=8192).contains(&height),"Invalid EGL resize");
-        if self.window.is_some(){ensure!(width==self.width&&height==self.height,"Live canvas currently uses fixed 1280x720 coordinates");return Ok(());}
+        // The launcher owns live resolution; guest resize requests cannot reset it.
+        // Canvas/screen queries report the selected size back to Unity.
+        if self.window.is_some(){return Ok(());}
         let replacement=self.create_pbuffer(width,height)?;
         if unsafe{eglMakeCurrent(self.display,replacement,replacement,self.context)}==0{
             unsafe{eglDestroySurface(self.display,replacement);}anyhow::bail!("Bind resized EGL pbuffer");

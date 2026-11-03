@@ -18,10 +18,11 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
     private static native boolean pointerNative(long id,int kind,int x,int y);
     private static native String statusNative(long id);
     private static native boolean gameInputNative(long id,int kind,int a,int b);
-    private static native String runLiveNative(long id,Surface surface,String artifact,String log,String data);
+    private static native String runLiveNative(long id,Surface surface,String artifact,String log,String data,int width,int height);
     private final Handler handler=new Handler(Looper.getMainLooper());
     private final TouchRouter touch=new TouchRouter();
     private SurfaceView surface;private TextView status;private GameControlView controls;
+    private HardwareInput hardware;private GameInputMixer inputMixer;private int renderWidth=1280,renderHeight=720;
     private long session;private boolean running,surfaceReady,wantsRun,runtimeReady,exiting;
     private long firstVisible;
     private final Runnable poll=new Runnable(){@Override public void run(){
@@ -38,12 +39,14 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
     }};
     @Override public void onCreate(Bundle state){
         super.onCreate(state);setVolumeControlStream(android.media.AudioManager.STREAM_MUSIC);
+        int resolution=RenderSettings.selected(this);renderWidth=RenderSettings.WIDTHS[resolution];renderHeight=RenderSettings.HEIGHTS[resolution];
         audioManager=(android.media.AudioManager)getSystemService(AUDIO_SERVICE);audioFocus=new android.media.AudioFocusRequest.Builder(android.media.AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(new android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_GAME).setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC).build()).setOnAudioFocusChangeListener(change->audioFocus(change==android.media.AudioManager.AUDIOFOCUS_GAIN)).build();getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         FrameLayout root=new FrameLayout(this);root.setBackgroundColor(Color.BLACK);setContentView(root);
         root.post(this::hideBars);
-        surface=new SurfaceView(this){@Override protected void onMeasure(int width,int height){int[] size=TouchRouter.fit(MeasureSpec.getSize(width),MeasureSpec.getSize(height));setMeasuredDimension(size[0],size[1]);}};
-        root.addView(surface,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));surface.getHolder().setFixedSize(1280,720);surface.getHolder().addCallback(this);
+        surface=new SurfaceView(this){@Override protected void onMeasure(int width,int height){int[] size=TouchRouter.fit(MeasureSpec.getSize(width),MeasureSpec.getSize(height));setMeasuredDimension(size[0],size[1]);}
+            @Override public void onPointerCaptureChange(boolean captured){super.onPointerCaptureChange(captured);if(!captured&&hardware!=null)hardware.reset();}};
+        root.addView(surface,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));surface.getHolder().setFixedSize(renderWidth,renderHeight);surface.getHolder().addCallback(this);
         surface.setOnTouchListener((view,event)->{
             if(controls!=null&&controls.playing()){touch.cancel();return true;}
             TouchRouter.Event pointer=null;int action=event.getActionMasked(),index=event.getActionIndex();
@@ -55,12 +58,24 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
             return true;
         });
         status=new TextView(this);status.setTextColor(Color.WHITE);status.setBackgroundColor(0x88000000);status.setPadding(16,8,16,8);root.addView(status,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));
-        controls=new GameControlView(this,(kind,a,b)->{if(kind==3)touch.cancel();return session!=0&&gameInputNative(session,kind,a,b);},this::showPause);
+        inputMixer=new GameInputMixer((kind,a,b)->session!=0&&gameInputNative(session,kind,a,b));
+        GameControls.Sink touchSink=inputMixer.source(0);
+        controls=new GameControlView(this,(kind,a,b)->{if(kind==3)touch.cancel();return touchSink.send(kind,a,b);},this::showPause);
         root.addView(controls,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));
+        hardware=new HardwareInput(this,surface,inputMixer.source(1),new HardwareInput.Host(){
+            public boolean ready(){return session!=0&&running&&!exiting&&hasWindowFocus();}
+            public boolean playing(){return controls.playing();}
+            public void mode(boolean playing){controls.setPlaying(playing);}
+            public void pause(){showPause();}
+            public void pointer(int kind,int x,int y){if(session!=0)pointerNative(session,kind,x,y);}
+            public void cursor(boolean visible,int x,int y){controls.cursor(visible,x,y);}
+        });
+        controls.setModeListener(()->{if(hardware!=null)hardware.reset();});
         try{System.loadLibrary("ravenfield_native_host");runtimeReady=true;}catch(LinkageError error){status.setText(error.toString());wantsRun=false;finish();}
     }
     private void escape(){if(session!=0){gameInputNative(session,0,27,1);gameInputNative(session,0,27,0);}}
     private void showPause(){
+        if(hardware!=null)hardware.reset();
         if(controls.cancelEdit())return;
         boolean wasPlaying=controls.playing();controls.setPlaying(false);if(wasPlaying)escape();
         new android.app.AlertDialog.Builder(this).setTitle(GameActivity.this.getString(R.string.ui_ravendroid_b77d3))
@@ -83,9 +98,12 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
     private void hideBars(){
         if(Build.VERSION.SDK_INT>=30){getWindow().setDecorFitsSystemWindows(false);WindowInsetsController controller=getWindow().getInsetsController();if(controller!=null){controller.hide(WindowInsets.Type.systemBars());controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);}}
     }
-    @Override public void onWindowFocusChanged(boolean focused){super.onWindowFocusChanged(focused);if(focused)hideBars();else{touch.cancel();if(session!=0)pointerNative(session,3,0,0);if(controls!=null&&controls.playing())controls.releaseAll();}}
-    @Override protected void onResume(){super.onResume();audioFocus(audioManager.requestAudioFocus(audioFocus)==android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED);wantsRun=runtimeReady&&!exiting;handler.removeCallbacks(poll);if(wantsRun)handler.post(poll);}
-    @Override protected void onPause(){audioFocus(false);audioManager.abandonAudioFocusRequest(audioFocus);wantsRun=false;handler.removeCallbacks(poll);touch.cancel();if(controls!=null)controls.releaseAll();if(session!=0)stopSessionNative(session);super.onPause();}
+    @Override public boolean dispatchKeyEvent(KeyEvent event){return hardware!=null&&hardware.key(event)||super.dispatchKeyEvent(event);}
+    @Override public boolean dispatchGenericMotionEvent(MotionEvent event){return hardware!=null&&hardware.motion(event)||super.dispatchGenericMotionEvent(event);}
+    @Override public boolean dispatchTouchEvent(MotionEvent event){if(hardware!=null&&HardwareInput.mouseSource(event.getSource())&&hardware.mouse(event,false))return true;return super.dispatchTouchEvent(event);}
+    @Override public void onWindowFocusChanged(boolean focused){super.onWindowFocusChanged(focused);if(focused)hideBars();else{if(hardware!=null)hardware.reset();touch.cancel();if(session!=0)pointerNative(session,3,0,0);if(controls!=null)controls.releaseAll();if(inputMixer!=null)inputMixer.reset();}}
+    @Override protected void onResume(){super.onResume();if(hardware!=null)hardware.start();audioFocus(audioManager.requestAudioFocus(audioFocus)==android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED);wantsRun=runtimeReady&&!exiting;handler.removeCallbacks(poll);if(wantsRun)handler.post(poll);}
+    @Override protected void onPause(){if(hardware!=null)hardware.stop();audioFocus(false);audioManager.abandonAudioFocusRequest(audioFocus);wantsRun=false;handler.removeCallbacks(poll);touch.cancel();if(controls!=null)controls.releaseAll();if(inputMixer!=null)inputMixer.reset();if(session!=0)stopSessionNative(session);super.onPause();}
     @Override protected void onDestroy(){handler.removeCallbacks(poll);if(session!=0)stopSessionNative(session);super.onDestroy();}
     @Override public void surfaceCreated(SurfaceHolder holder){surfaceReady=true;startIfReady();}
     @Override public void surfaceChanged(SurfaceHolder holder,int format,int width,int height){}
@@ -103,7 +121,7 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
                 if(new JSONObject(statusNative(id)).optBoolean("stopped"))answer=GameActivity.this.getString(R.string.ui_the_game_session_was_stopped_before_starti_fea94);
                 else{
                     try(FileOutputStream output=new FileOutputStream(log)){output.getFD().sync();}
-                    answer="RavenDroid "+BuildConfig.VERSION_NAME+"\n"+Build.MANUFACTURER+" "+Build.MODEL+" Android "+Build.VERSION.RELEASE+" API "+Build.VERSION.SDK_INT+"\nTest=unity-live-surface\n"+runLiveNative(id,target,artifact.getAbsolutePath(),log.getAbsolutePath(),new File(getFilesDir(),"game.data").getAbsolutePath());
+                    answer="RavenDroid "+BuildConfig.VERSION_NAME+"\n"+Build.MANUFACTURER+" "+Build.MODEL+" Android "+Build.VERSION.RELEASE+" API "+Build.VERSION.SDK_INT+"\nTest=unity-live-surface\nResolution="+renderWidth+"x"+renderHeight+"\n"+runLiveNative(id,target,artifact.getAbsolutePath(),log.getAbsolutePath(),new File(getFilesDir(),"game.data").getAbsolutePath(),renderWidth,renderHeight);
                 }
             }catch(Exception|LinkageError error){answer=GameActivity.this.getString(R.string.ui_game_session_error_cc8c3)+error;}
             try{stopped=new JSONObject(statusNative(id)).optBoolean("stopped");}catch(Exception ignored){}

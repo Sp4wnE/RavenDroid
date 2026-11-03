@@ -52,8 +52,9 @@ pub(super) fn button(store:&mut Store<Host>,instance:&Instance,button:u8,down:bo
     let(x,y)=(input.x,input.y);send(store,instance,if down{5}else{6},x,y,0,0,button)
 }
 pub(super) fn relative(store:&mut Store<Host>,instance:&Instance,dx:i32,dy:i32)->anyhow::Result<()>{
+    let (width,height)=store.data().graphics.as_ref().map(|graphics|graphics.dimensions()).unwrap_or((1280,720));
     let input=&mut store.data_mut().pointer;
-    input.x=input.x.saturating_add(dx).clamp(0,1279);input.y=input.y.saturating_add(dy).clamp(0,719);
+    input.x=input.x.saturating_add(dx).clamp(0,width-1);input.y=input.y.saturating_add(dy).clamp(0,height-1);
     let(x,y)=(input.x,input.y);send(store,instance,8,x,y,dx,dy,0)
 }
 fn send(store:&mut Store<Host>,instance:&Instance,kind:i32,x:i32,y:i32,dx:i32,dy:i32,button:u8)->anyhow::Result<()>{

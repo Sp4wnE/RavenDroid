@@ -95,7 +95,7 @@ impl Graphics {
             if let Some(slot)=slots::slot(name){self.procedures[slot]=address;}Ok(address)}
         #[cfg(not(any(windows,target_os="android")))]{let _=name;Err(host_error("Native GLES surface backend is not connected on this platform"))}
     }
-    fn dimensions(&self)->(i32,i32){
+    pub(super) fn dimensions(&self)->(i32,i32){
         #[cfg(any(windows,target_os="android"))]{self.context.dimensions()}
         #[cfg(not(any(windows,target_os="android")))]{(0,0)}
     }
