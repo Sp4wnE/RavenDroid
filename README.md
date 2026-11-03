@@ -24,7 +24,6 @@ RavenDroid runs a reviewed Unity WebGL build outside the browser using ahead-of-
 ## Install and play
 
 1. Download the **full ARM64 APK** from [Releases](../../releases/latest), approximately **1.02GB**.
-2. Install it over the existing app to preserve saves and control layouts.
 3. Launch RavenDroid and wait for the automatic preparation to finish. No separate game file or download is required.
 4. Select **Launch game**, then use **Instant Action → Play → Deploy** in the game.
 
@@ -52,13 +51,13 @@ Android launcher
                   └── queued touch and keyboard input
 ```
 
-This is a native host for a pinned WebAssembly build, not a rebuild from the original Unity project. It is not an official Ravenfield release.
+This is a native host for a pinned WebAssembly build, not a rebuild from the original Unity project. It is not an official Ravenfield release. It is also based on an older Ravenfield build that was ported to web.
 
 ## Validation and limitations
 
 The current data-preparation implementation passed 34 Java tests and a full-size integration test using 256 MiB of Java heap. APK signing, artifact hashes, profile matching and16 KiB native alignment are checked before release. The native engine's earlier validation included 88 runtime and 7 GPU tests.
 
-Actual performance depends on the device, scene and settings. Universal rendering correctness and stable 60 FPS are not claimed. The latest bundled launch flow has not yet been verified on a physical device. Vehicle profiles are selected manually; complete vehicle/aircraft gameplay coverage and background/lock-screen resume are not established.
+Actual performance depends on the device, scene and settings. Universal rendering correctness and stable 60 FPS are not claimed. Vehicle profiles are selected manually; complete vehicle/aircraft gameplay coverage and background/lock-screen resume are not established.
 
 See [validation](docs/VALIDATION.md), [controls](docs/CONTROLS.md), [architecture](docs/ARCHITECTURE.md) and [build instructions](docs/BUILDING.md).
 
