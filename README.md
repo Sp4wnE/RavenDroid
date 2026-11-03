@@ -38,7 +38,6 @@ Allow approximately **1.5GB of additional free storage after installation** for 
 - Drag controls to reposition them; adjust size, opacity and sensitivity; save layouts.
 - Keyboard, mouse and gamepad input, including captured mouse look and a gamepad menu cursor. **F12 / Select** switches between menu and gameplay controls.
 - Selectable **640×360, 960×540 or 1280×720** render resolution for the next game session.
-- Turkish/English official-release notice with a GitHub link, available again through the launcher's **?** button.
 - Size and SHA-256 verification with atomic data installation.
 - Offline full APK with bounded streaming preparation.
 
