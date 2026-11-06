@@ -37,6 +37,7 @@ final class LauncherScreen {
         LinearLayout settings=card(column);settings.addView(label(activity.getString(R.string.ui_make_it_yours_dc271),20,0xfff1f3f7));
         settings.addView(button(activity.getString(R.string.ui_render_resolution),0xff252d39,()->RenderSettings.show(activity)));
         settings.addView(button(activity.getString(R.string.ui_hardware_help_title),0xff252d39,()->new AlertDialog.Builder(activity).setTitle(R.string.ui_hardware_help_title).setMessage(R.string.ui_hardware_help).setPositiveButton(android.R.string.ok,null).show()));
+        settings.addView(button(activity.getString(R.string.ui_mapping_title),0xff252d39,()->MappingDialog.show(activity,null)));
         settings.addView(button(activity.getString(R.string.ui_controls_and_sensitivity_dd47b),0xff252d39,()->ControlPreferences.show(activity,null)));
         settings.addView(button(activity.getString(R.string.ui_edit_button_layout_92a0b),0xff252d39,()->activity.startActivity(new android.content.Intent(activity,ControlEditorActivity.class))));
         settings.addView(button(activity.getString(R.string.ui_audio_b3773),0xff252d39,()->new AlertDialog.Builder(activity).setTitle(activity.getString(R.string.ui_game_audio_1790a)).setMessage(activity.getString(R.string.ui_use_your_phone_s_media_volume_buttons_to_a_0b2e6)).setPositiveButton(activity.getString(R.string.ui_ok_2dfaa),null).show()));

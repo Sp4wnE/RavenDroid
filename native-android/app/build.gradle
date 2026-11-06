@@ -21,8 +21,8 @@ android {
         applicationId emulatorTest ? 'dev.ravenfield.nativehost.emutest' : 'dev.ravenfield.nativehost'
         minSdk 29
         targetSdk 35
-        versionCode bundledData ? 27 : 26
-        versionName bundledData ? (emulatorTest ? '0.21-full-emulator' : '0.21-full') : (emulatorTest ? '0.21-emulator' : '0.21-local')
+        versionCode bundledData ? 29 : 28
+        versionName bundledData ? (emulatorTest ? '0.22-full-emulator' : '0.22-full') : (emulatorTest ? '0.22-emulator' : '0.22-local')
         ndk { abiFilters nativeAbi }
         buildConfigField 'String', 'NATIVE_AOT_TARGET', '"' + nativeTarget + '"'
         buildConfigField 'String', 'NATIVE_ENGINE_PROFILE', '"' + engineProfile + '"'

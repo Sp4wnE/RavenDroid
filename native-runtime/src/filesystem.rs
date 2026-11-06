@@ -105,6 +105,10 @@ impl AssetFs {
         let inode=self.nodes.get(key).map(|node|node.inode).unwrap_or(self.nodes.len() as u32+1);
         self.nodes.insert(key.into(),Node{offset:0,size:if directory{4096}else{size},inode,directory});
     }
+    pub(super) fn saves_are_dirty(&self) -> bool {
+        self.saves.as_ref().is_some_and(|saves| saves.is_dirty())
+    }
+
     pub(super) fn sync_saves(&mut self)->Result<()> {
         self.saves.as_mut().context("Writable save storage is not mounted")?.sync()
     }

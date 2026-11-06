@@ -44,6 +44,7 @@ pub(super) struct Graphics {
     diagnostic_calls:std::collections::BTreeMap<String,String>,
     procedures:[usize;slots::COUNT],
     state_cache:[Option<i32>;16],state_hits:u64,state_queries:u64,
+    verified_buffers:std::collections::HashSet<u32>,
     active_texture:Option<u32>,texture_units:u32,redundant_state_calls:u64,
 }
 
@@ -81,7 +82,7 @@ impl Graphics {
         let (s3tc,s3tc_srgb)=s3tc_capabilities(&compressed_formats);
         if s3tc{interface_extensions.push("WEBGL_compressed_texture_s3tc".into());}
         if s3tc_srgb{interface_extensions.push("WEBGL_compressed_texture_s3tc_srgb".into());}
-        Ok(Self{context,guest_context:false,current:false,strings:Default::default(),draw_calls:0,index_sizes:Default::default(),index_size_hits:0,index_size_queries:0,extensions,compressed_formats,interface_extensions,requested_extensions:Default::default(),error:0,failures:Vec::new(),consumed_errors:Default::default(),syncs:Default::default(),next_sync:1,capture:None,diagnostic_calls:Default::default(),procedures:[0;slots::COUNT],state_cache:[None;16],state_hits:0,state_queries:0,active_texture:None,texture_units:texture_units.max(0) as u32,redundant_state_calls:0})
+        Ok(Self{context,guest_context:false,current:false,strings:Default::default(),draw_calls:0,index_sizes:Default::default(),index_size_hits:0,index_size_queries:0,extensions,compressed_formats,interface_extensions,requested_extensions:Default::default(),error:0,failures:Vec::new(),consumed_errors:Default::default(),syncs:Default::default(),next_sync:1,capture:None,diagnostic_calls:Default::default(),procedures:[0;slots::COUNT],state_cache:[None;16],state_hits:0,state_queries:0,verified_buffers:Default::default(),active_texture:None,texture_units:texture_units.max(0) as u32,redundant_state_calls:0})
     }
     #[cfg(target_os="android")]pub(crate) fn present(&mut self)->anyhow::Result<bool>{
         if self.draw_calls==0{return Ok(false);}let errors=self.context.present()?;if self.error==0{self.error=errors.first().copied().unwrap_or(0);}Ok(true)
@@ -167,10 +168,26 @@ pub(super) fn bind_texture_typed(caller:&mut Caller<'_,Host>,target:i32,object:i
     unsafe{function(target as u32,object as u32)};Ok(())
 }
 pub(super) fn bind_buffer_typed(caller:&mut Caller<'_,Host>,target:i32,object:i32)->wasmtime::Result<()>{
-    let slot=match target{0x8892=>Some(0),0x8893=>Some(1),0x88EB=>Some(2),0x88EC=>Some(3),_=>None};
-    if let Some(slot)=slot{let cached=&mut caller.data_mut().graphics.as_mut().unwrap().state_cache[slot];if *cached!=Some(object){*cached=None;}}
-    let function:unsafe extern "system" fn(u32,u32)=unsafe{std::mem::transmute(procedure(caller,"glBindBuffer")?)};
-    unsafe{function(target as u32,object as u32)};Ok(())
+    let function: unsafe extern "system" fn(u32, u32) =
+        unsafe { std::mem::transmute(procedure(caller, "glBindBuffer")?) };
+    unsafe { function(target as u32, object as u32) };
+    let slot = match target {
+        0x8892 => 0, // ARRAY_BUFFER
+        0x8893 => 1, // ELEMENT_ARRAY_BUFFER, invalidated when switching VAOs
+        0x88EB => 2,
+        0x88EC => 3,
+        _ => return Ok(()),
+    };
+    let graphics = caller.data_mut().graphics.as_mut().unwrap();
+    // These targets can rebind an existing object without creating it. The
+    // first bind still needs a driver query because a generated name alone
+    // does not prove that object creation succeeded.
+    if (slot == 0 || (slot == 1 && cfg!(target_os = "android"))) && (object == 0 || graphics.verified_buffers.contains(&(object as u32))) {
+        graphics.state_cache[slot] = Some(object);
+    } else if graphics.state_cache[slot] != Some(object) {
+        graphics.state_cache[slot] = None;
+    }
+    Ok(())
 }
 pub(super) fn uniform4fv_typed(caller:&mut Caller<'_,Host>,location:i32,rows:i32,address:i32)->wasmtime::Result<()>{
     pointers::uniform4fv(caller,location,rows,address)
@@ -191,9 +208,8 @@ pub(super) fn active_texture_typed(caller:&mut Caller<'_,Host>,target:i32)->wasm
 }
 pub(super) fn dispatch(caller:&mut Caller<'_,Host>,name:&str,args:&[Val],results:&mut[Val])->wasmtime::Result<bool>{
     if caller.data().graphics.is_none(){return Ok(false);}
-    // Query real driver state lazily after each potential mutation. Rebinding
-    // the already driver-verified object cannot change that binding, even if
-    // the setter fails. Still call the driver to preserve all error behavior.
+    // Invalidate state whose binding can change indirectly. Explicit buffer
+    // binds are handled by bind_buffer_typed, including the generic route.
     match name{
         "env._glDeleteBuffers"=>caller.data_mut().graphics.as_mut().unwrap().state_cache[..4].fill(None),
         "env._glBindVertexArray"|"env._glDeleteVertexArrays"=>caller.data_mut().graphics.as_mut().unwrap().state_cache[1]=None,

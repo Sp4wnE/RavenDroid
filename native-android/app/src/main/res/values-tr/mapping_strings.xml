@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ui_add_button">+ Tuş ekle</string>
+    <string name="ui_remove_button">Tuşu kaldır</string>
+    <string name="ui_mapping_title">Fiziksel kontrol eşleme</string>
+    <string name="ui_mapping_connect">Gamepad veya klavye bağlayıp bu ekranı tekrar aç.</string>
+    <string name="ui_mapping_device">Giriş cihazını seç</string>
+    <string name="ui_mapping_hint">Ayarlar yalnız bu cihaz için kaydedilir. Tuş ata veya çubuğu hareket ettirerek Android eksen adını gör. Aşağıda her işlevin eksenini seç. Menü modunda çubuk imleci taşır; oyun kontrolü için Select / F12 kullan.</string>
+    <string name="ui_mapping_bind">Tuş / düğme ata</string>
+    <string name="ui_mapping_action">Oyun işlevini seç</string>
+    <string name="ui_mapping_press">Seçilen cihazda tuşa basıp bırak. Geri ile vazgeç.</string>
+    <string name="ui_mapping_deadzone">Çubuk ölü bölgesi</string>
+    <string name="ui_mapping_invert">Eksen yönü</string>
+    <string-array name="mapping_axes"><item>Hareket sol / sağ</item><item>Hareket ileri / geri</item><item>Bakış sol / sağ</item><item>Bakış yukarı / aşağı</item><item>Nişan tetiği</item><item>Ateş tetiği</item><item>Yön tuşları sol / sağ</item><item>Yön tuşları yukarı / aşağı</item></string-array>
+    <string name="ui_failure_title">Oyun devam edemedi</string>
+    <string name="ui_failure_graphics">Raporda grafik hatası var. Gerekli OpenGL ES veya robust-access desteği eksik olabilir ya da shader/sürücü işlemi başarısız olmuş olabilir. Düşük çözünürlük bellek baskısını azaltabilir ama eksik sürücü özelliğini eklemez. Teşhis için raporu kopyala.</string>
+    <string name="ui_failure_memory">Raporda olası bellek yetersizliği var. Diğer oyunları kapat, çözünürlüğü ve oyun içindeki bot sayısını düşür. Tekrarlarsa raporu kopyala.</string>
+    <string name="ui_failure_storage">Boş depolama alanı yetersiz. Yer açıp launcher üzerinden oyun dosyalarını hazırla / doğrula.</string>
+    <string name="ui_failure_runtime">Native çalışma ortamı veya eşleşen oyun önbelleği yüklenemedi. Desteklenen ABI için resmi APK kullanıp dosyaları hazırla / doğrula. Sorun sürerse raporu kopyala.</string>
+    <string name="ui_failure_unknown">Oturum beklenmedik biçimde bitti; nedeni henüz bilinmiyor. Raporu kopyalayıp cihaz modeli ve hangi aşamada durduğuyla birlikte ilet. Otomatik yükleme yapılmaz.</string>
+    <string name="ui_mapping_pair">%1$s · %2$s</string>
+    <string name="ui_mapping_arrow">%1$s → %2$s</string>
+</resources>

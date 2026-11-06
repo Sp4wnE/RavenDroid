@@ -184,6 +184,8 @@ impl SaveStore {
         if result.is_err(){let _=std::fs::remove_file(&temporary);}
         result?;self.dirty=false;self.syncs+=1;Ok(())
     }
+    pub(super) fn is_dirty(&self) -> bool { self.dirty }
+
     pub(super) fn report(&self)->SaveReport {
         SaveReport{files:self.entries.values().filter(|entry|!entry.directory).count(),bytes:self.total(),dirty:self.dirty,syncs:self.syncs,written_bytes:self.written_bytes}
     }

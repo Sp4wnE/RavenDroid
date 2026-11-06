@@ -19,7 +19,15 @@ USB/Bluetooth devices use Android input events and the existing keyboard/mouse g
 | Gamepad buttons | RT fire; LT aim; A jump; B crouch; X reload; Y loadout; LB/RB cycle equipment |
 | Gamepad D-pad in gameplay | Up map; down X/prone binding; left Q/right E bindings |
 
-Touch and physical input ownership is combined so releasing one source does not release an action still held by another. Device removal and focus loss clear held inputs. Keyboard/controller/mouse mappings are fixed in this first implementation; the existing touch-layout customization is unchanged. Full vehicle/aircraft coverage and physical controller-model coverage require separate testing. Equipment cycling tracks a local 1–5 selection; choosing equipment through another input can make the next wheel/bumper step differ from the game's current slot.
+Touch and physical input ownership is combined so releasing one source does not release an action still held by another. Device removal and focus loss clear held inputs. The published 0.21 implementation uses fixed physical mappings. Full vehicle/aircraft coverage and physical controller-model coverage require separate testing. Equipment cycling tracks a local 1–5 selection; choosing equipment through another input can make the next wheel/bumper step differ from the game's current slot.
+
+## Custom mappings (0.22)
+
+The launcher and in-game pause panel offer **Physical input mapping**. Select a connected controller or alphabetic keyboard, choose a game action, then press and release the physical key. Settings save immediately for that Android device descriptor, stored under its SHA-256 identifier. Reset clears only that device profile. Device identities can differ between USB and Bluetooth, so those may need separate profiles.
+
+Controller motion roles can select another reported axis, invert it or disable it. Moving a stick on the mapping screen displays Android axis names/values. Dead zone and look sensitivity are adjustable per device. Use movement/look role selection to correct swapped sticks; the existing menu/gameplay distinction still applies. Analog-only triggers can be assigned to the aim/fire axis roles; arbitrary key-action capture requires a KeyEvent. Mouse buttons/wheel are unchanged. Left-stick movement still emulates digital WASD.
+
+In the touch editor, **+ Add button** selects another supported guest keyboard/mouse action. Up to 32 extra buttons per infantry/vehicle profile are supported; duplicate actions are not added. Extra buttons can be moved/resized/faded and removed from their settings dialog. Save commits both drafts; Cancel discards edits. Existing default button layouts are preserved unless explicitly reset.
 
 ## Launcher settings (0.21)
 

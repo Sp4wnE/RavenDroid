@@ -109,8 +109,17 @@ pub(super) fn dispatch(caller:&mut Caller<'_,Host>,name:&str,args:&[Val],_result
                 let pointer=buffer_range(caller,0x88EB,i(6)?,length)? as *mut c_void;
                 native!(caller,"glReadPixels",unsafe extern "system" fn(i32,i32,i32,i32,u32,u32,*mut c_void);i(0)?,i(1)?,i(2)?,i(3)?,i(4)? as u32,i(5)? as u32,pointer);
             }else{
-                let pointer=range(caller,i(6)?,length)?;let mut bytes=unsafe{std::slice::from_raw_parts(pointer.cast::<u8>(),length)}.to_vec();
-                native!(caller,"glReadPixels",unsafe extern "system" fn(i32,i32,i32,i32,u32,u32,*mut c_void);i(0)?,i(1)?,i(2)?,i(3)?,i(4)? as u32,i(5)? as u32,bytes.as_mut_ptr().cast());write(caller,i(6)?,&bytes)?;
+                let (x, y, width, height, format, kind) =
+                    (i(0)?, i(1)?, i(2)?, i(3)?, i(4)? as u32, i(5)? as u32);
+                let start = i(6)? as u32 as usize;
+                let end = start.checked_add(length).ok_or_else(|| host_error("GL guest range overflow"))?;
+                let read: unsafe extern "system" fn(i32, i32, i32, i32, u32, u32, *mut c_void) =
+                    unsafe { std::mem::transmute(procedure(caller, "glReadPixels")?) };
+                let memory = caller.data().memory.unwrap();
+                let output = memory.data_mut(caller).get_mut(start..end)
+                    .ok_or_else(|| host_error("GL transfer outside guest memory"))?;
+                // CPU readback is synchronous, and the driver cannot reenter the guest.
+                unsafe { read(x, y, width, height, format, kind, output.as_mut_ptr().cast()) };
             }
         }
         "env._glVertexAttribPointer"=>vertex_attrib_pointer(caller,i(0)?,i(1)?,i(2)?,i(3)?,i(4)?,i(5)?)?,

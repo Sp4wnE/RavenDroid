@@ -73,6 +73,18 @@ fn scalar(caller:&mut Caller<'_,Host>,name:u32)->wasmtime::Result<i32>{
     if let Some(slot)=slot{if let Some(value)=caller.data().graphics.as_ref().unwrap().state_cache[slot]{caller.data_mut().graphics.as_mut().unwrap().state_hits+=1;return Ok(value);}}
     let mut value=0i32;
     native!(caller,"glGetIntegerv",unsafe extern "system" fn(u32,*mut i32);name,&mut value);
+    if value != 0 && matches!(name, 0x8894 | 0x8895) {
+        let object = value as u32;
+        let known = &caller.data().graphics.as_ref().unwrap().verified_buffers;
+        if known.len() < 32768 && !known.contains(&object) {
+            // A non-current VAO can retain a deleted object. glIsBuffer
+            // excludes names no longer usable for a fresh explicit bind.
+            caller.data_mut().graphics.as_mut().unwrap().state_queries += 1;
+            if native!(caller, "glIsBuffer", unsafe extern "system" fn(u32) -> u8; object) != 0 {
+                caller.data_mut().graphics.as_mut().unwrap().verified_buffers.insert(object);
+            }
+        }
+    }
     let graphics=caller.data_mut().graphics.as_mut().unwrap();graphics.state_queries+=1;if let Some(slot)=slot{graphics.state_cache[slot]=Some(value);}Ok(value)
 }
 
@@ -120,6 +132,16 @@ pub(super) fn dispatch(caller:&mut Caller<'_,Host>,name:&str,args:&[Val],results
                 0x821B=>Some(3),0x821C|0x87FE|0x8DF9=>Some(0),_=>None,
             };
             if let Some(value)=interface_value{output_i32(caller,i(1)?,&[value])?;return Ok(true);}
+            if matches!(parameter, 0x0C02 | 0x8825) {
+                let binding = if parameter == 0x0C02 { 0x8CAA } else { 0x8CA6 };
+                let framebuffer = caller.data().graphics.as_ref().unwrap().framebuffer();
+                if scalar(caller, binding)? as u32 == framebuffer {
+                    let value = scalar(caller, parameter)?;
+                    let value = if value == 0x8CE0 { 0x0405 } else { value };
+                    output_i32(caller, i(1)?, &[value])?;
+                    return Ok(true);
+                }
+            }
             if matches!(parameter,0x8CA6|0x8CAA){let value=scalar(caller,parameter)?;let value=if value as u32==caller.data().graphics.as_ref().unwrap().framebuffer(){0}else{value};output_i32(caller,i(1)?,&[value])?;return Ok(true);}
             let length=match parameter {
                 0x0BA2|0x0C10|0x0C23|0x0C22|0x8005=>4,
@@ -141,6 +163,10 @@ pub(super) fn dispatch(caller:&mut Caller<'_,Host>,name:&str,args:&[Val],results
             range(caller,i(1)?,length)?;
             let mut values=if name.contains("Delete"){words(caller,i(1)?,length/4)?}else{vec![0u32;length/4]};
             native!(caller,name.strip_prefix("env._").unwrap(),unsafe extern "system" fn(i32,*mut u32);i(0)?,values.as_mut_ptr());
+            if name == "env._glDeleteBuffers" {
+                let known = &mut caller.data_mut().graphics.as_mut().unwrap().verified_buffers;
+                for id in &values { known.remove(id); }
+            }
             if name.contains("Gen"){write(caller,i(1)?,&values.iter().flat_map(|value|value.to_le_bytes()).collect::<Vec<_>>())?;}
         }
         "env._glGetProgramiv"|"env._glGetShaderiv"|"env._glGetTexParameteriv"|"env._glGetRenderbufferParameteriv"|"env._glGetQueryiv"|"env._glGetQueryObjectuiv"|"env._glGetVertexAttribiv"|"env._glGetIntegeri_v"=>{

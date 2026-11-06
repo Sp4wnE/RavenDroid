@@ -26,8 +26,9 @@ final class HardwareControls {
     void stick(int device,float x,float y,float rx,float ry,float leftTrigger,float rightTrigger) {
         key(device,-1,65,x<-.25f);key(device,-2,68,x>.25f);key(device,-3,87,y<-.25f);key(device,-4,83,y>.25f);
         key(device,-5,1002,leftTrigger>.25f);key(device,-6,1000,rightTrigger>.25f);
-        float[] state=sticks.computeIfAbsent(device,ignored->new float[4]);state[0]=rx;state[1]=ry;
+        look(device,rx,ry);
     }
+    void look(int device,float rx,float ry){float[] state=sticks.computeIfAbsent(device,ignored->new float[4]);state[0]=rx;state[1]=ry;}
     void tick(float seconds,float sensitivity,boolean invertY) {
         seconds=Math.max(0,Math.min(.05f,seconds));
         int dx=0,dy=0;

@@ -144,7 +144,14 @@ fn guest_indexed_triangle_renders_and_sync_handles_roundtrip(){
     gl(&mut store,&instance,"_glBindBuffer",&[0x8893,index]);memory.write(&mut store,4096,&[0u16,1,2].iter().flat_map(|v|v.to_le_bytes()).collect::<Vec<_>>()).unwrap();gl(&mut store,&instance,"_glBufferData",&[0x8893,6,4096,0x88E4]);
     gl(&mut store,&instance,"_glVertexAttribPointer",&[0,2,0x1406,0,0,0]);gl(&mut store,&instance,"_glEnableVertexAttribArray",&[0]);
     gl(&mut store,&instance,"_glBindFramebuffer",&[0x8D40,0]);gl(&mut store,&instance,"_glGetIntegerv",&[0x8CA6,128]);assert_eq!(read(&store,128),0);
+    for parameter in [0x0C02, 0x8825] {
+        gl(&mut store, &instance, "_glGetIntegerv", &[parameter, 128]);
+        assert_eq!(read(&store, 128), 0x0405);
+    }
+    memory.write(&mut store, 8191, &[0xA5; 6]).unwrap();
     gl(&mut store,&instance,"_glDrawElements",&[4,3,0x1403,0]);gl(&mut store,&instance,"_glReadPixels",&[8,8,1,1,0x1908,0x1401,8192]);
+    assert_eq!(memory.data(&store)[8191], 0xA5);
+    assert_eq!(memory.data(&store)[8196], 0xA5);
     assert!(memory.data(&store)[8192..8196].iter().zip([64u8,128,191,255]).all(|(a,b)|a.abs_diff(b)<=1));
     let queries=store.data().graphics.as_ref().unwrap().index_size_queries;
     gl(&mut store,&instance,"_glDrawElements",&[4,3,0x1403,0]);

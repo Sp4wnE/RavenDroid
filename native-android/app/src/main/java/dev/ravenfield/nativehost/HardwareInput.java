@@ -23,6 +23,8 @@ final class HardwareInput implements InputManager.InputDeviceListener {
     private final HardwareControls controls;private final InputManager manager;private final GameControls.Sink mouseSink;
     private final Handler handler=new Handler(Looper.getMainLooper());
     private final Map<Integer,float[]> menuSticks=new HashMap<>();
+    private final Map<Integer,InputMapping> mappings=new HashMap<>();
+    private InputMapping mapping(InputDevice device){int id=device==null?-1:device.getId();return mappings.computeIfAbsent(id,ignored->MappingPreferences.load(context,device));}
     private final java.util.Set<String> menuButtons=new java.util.HashSet<>();
     private float cursorX=640,cursorY=360;private int weapon=1;private boolean active;
     private long previous;private ControlConfig preferences;
@@ -34,7 +36,7 @@ final class HardwareInput implements InputManager.InputDeviceListener {
     }
     void start(){if(active)return;active=true;previous=SystemClock.uptimeMillis();preferences=ControlPreferences.load(context,false);manager.registerInputDeviceListener(this,handler);handler.post(tick);}
     void stop(){if(!active)return;active=false;handler.removeCallbacks(tick);manager.unregisterInputDeviceListener(this);reset();}
-    void reset(){controls.reset();menuSticks.clear();menuButtons.clear();remainderX=remainderY=0;host.pointer(3,(int)cursorX,(int)cursorY);host.cursor(false,0,0);if(surface.hasPointerCapture())surface.releasePointerCapture();}
+    void reset(){controls.reset();mappings.clear();menuSticks.clear();menuButtons.clear();remainderX=remainderY=0;host.pointer(3,(int)cursorX,(int)cursorY);host.cursor(false,0,0);if(surface.hasPointerCapture())surface.releasePointerCapture();}
     private final Runnable tick=new Runnable(){public void run(){
         if(!active)return;long now=SystemClock.uptimeMillis();float dt=Math.min(.05f,(now-previous)/1000f);previous=now;
         if(host.ready()) {
@@ -57,13 +59,14 @@ final class HardwareInput implements InputManager.InputDeviceListener {
         if(!active||!host.ready()||event.getAction()==KeyEvent.ACTION_MULTIPLE)return false;
         int key=event.getKeyCode(),device=event.getDeviceId();boolean down=event.getAction()==KeyEvent.ACTION_DOWN;
         boolean gamepad=controller(event.getSource())||(event.getDevice()!=null&&controller(event.getDevice().getSources()));
-        if(key==KeyEvent.KEYCODE_F12||key==KeyEvent.KEYCODE_BUTTON_SELECT||key==KeyEvent.KEYCODE_BUTTON_MODE){if(down&&event.getRepeatCount()==0)mode();return true;}
-        if(key==KeyEvent.KEYCODE_ESCAPE||key==KeyEvent.KEYCODE_BUTTON_START||(gamepad&&key==KeyEvent.KEYCODE_BACK)) {
+        int action=mapping(event.getDevice()).action(key,gamepad?gamepadKey(key):key==KeyEvent.KEYCODE_F12?InputActions.MODE:key==KeyEvent.KEYCODE_ESCAPE?InputActions.PAUSE:keyboardKey(key));
+        if(action==InputActions.MODE){if(down&&event.getRepeatCount()==0)mode();return true;}
+        if(action==InputActions.PAUSE) {
             if(down&&event.getRepeatCount()==0){reset();host.pause();}return true;
         }
         if(gamepad) {
             if(!host.playing()) {
-                if(key==KeyEvent.KEYCODE_BUTTON_A){menuButton(device,key,down);return true;}
+                if(action==32){menuButton(device,key,down);return true;}
                 if(key==KeyEvent.KEYCODE_DPAD_LEFT||key==KeyEvent.KEYCODE_DPAD_RIGHT||key==KeyEvent.KEYCODE_DPAD_UP||key==KeyEvent.KEYCODE_DPAD_DOWN){
                     float[] axes=menuSticks.computeIfAbsent(device,ignored->new float[2]);
                     if(key==KeyEvent.KEYCODE_DPAD_LEFT||key==KeyEvent.KEYCODE_DPAD_RIGHT)axes[0]=down?(key==KeyEvent.KEYCODE_DPAD_LEFT?-1:1):0;
@@ -71,10 +74,9 @@ final class HardwareInput implements InputManager.InputDeviceListener {
                 }
                 return key>=KeyEvent.KEYCODE_BUTTON_A&&key<=KeyEvent.KEYCODE_BUTTON_MODE;
             }
-            if(key==KeyEvent.KEYCODE_BUTTON_L1||key==KeyEvent.KEYCODE_BUTTON_R1){if(down&&event.getRepeatCount()==0)cycle(key==KeyEvent.KEYCODE_BUTTON_R1?1:-1);return true;}
-            int action=gamepadKey(key);if(action<0)return false;controls.key(device,key,action,down);return true;
         }
-        int action=keyboardKey(key);if(action<0)return false;controls.key(device,key,action,down);return true;
+        if(action==InputActions.PREVIOUS||action==InputActions.NEXT){if(down&&event.getRepeatCount()==0)cycle(action==InputActions.NEXT?1:-1);return true;}
+        if(action<0)return mapping(event.getDevice()).keys.containsKey(key);controls.key(device,key,action,down);return true;
     }
     static int keyboardKey(int key){
         if(key>=KeyEvent.KEYCODE_A&&key<=KeyEvent.KEYCODE_Z)return 65+key-KeyEvent.KEYCODE_A;
@@ -88,7 +90,10 @@ final class HardwareInput implements InputManager.InputDeviceListener {
             case KeyEvent.KEYCODE_DPAD_LEFT:return 37;case KeyEvent.KEYCODE_DPAD_UP:return 38;case KeyEvent.KEYCODE_DPAD_RIGHT:return 39;case KeyEvent.KEYCODE_DPAD_DOWN:return 40;
             default:return -1;}
     }
-    private static int gamepadKey(int key){switch(key){
+    static int gamepadKey(int key){switch(key){
+        case KeyEvent.KEYCODE_BUTTON_SELECT:case KeyEvent.KEYCODE_BUTTON_MODE:return InputActions.MODE;
+        case KeyEvent.KEYCODE_BUTTON_START:case KeyEvent.KEYCODE_BACK:return InputActions.PAUSE;
+        case KeyEvent.KEYCODE_BUTTON_L1:return InputActions.PREVIOUS;case KeyEvent.KEYCODE_BUTTON_R1:return InputActions.NEXT;
         case KeyEvent.KEYCODE_BUTTON_A:return 32;case KeyEvent.KEYCODE_BUTTON_B:return 17;
         case KeyEvent.KEYCODE_BUTTON_X:return 82;case KeyEvent.KEYCODE_BUTTON_Y:return 13;
         case KeyEvent.KEYCODE_BUTTON_L2:return 1002;case KeyEvent.KEYCODE_BUTTON_R2:return 1000;
@@ -103,17 +108,36 @@ final class HardwareInput implements InputManager.InputDeviceListener {
         if(trigger)return Math.max(0,Math.min(1,(value-range.getMin())/Math.max(.001f,range.getRange())));
         return HardwareControls.axis(value,Math.max(.15f,Math.min(.5f,range.getFlat())));
     }
+    private static float mappedAxis(MotionEvent event,InputMapping m,int role){
+        int axis=m.axes[role];if(axis<0)return 0;
+        boolean trigger=role==InputMapping.AIM||role==InputMapping.FIRE;
+        // Preserve the previous automatic fallback only for an unmodified role.
+        InputDevice device=event.getDevice();
+        if(device!=null&&device.getMotionRange(axis,event.getSource())==null){
+            if(role==InputMapping.LOOK_X&&axis==MotionEvent.AXIS_Z)axis=MotionEvent.AXIS_RX;
+            else if(role==InputMapping.LOOK_Y&&axis==MotionEvent.AXIS_RZ)axis=MotionEvent.AXIS_RY;
+            else if(role==InputMapping.AIM&&axis==MotionEvent.AXIS_LTRIGGER)axis=MotionEvent.AXIS_BRAKE;
+            else if(role==InputMapping.FIRE&&axis==MotionEvent.AXIS_RTRIGGER)axis=MotionEvent.AXIS_GAS;
+        }
+        if(device==null||device.getMotionRange(axis,event.getSource())==null)return 0;
+        float value=axis(event,axis,trigger);
+        if(trigger)return m.inverted[role]?1-value:value;
+        // axis() already applies the device flat; user dead zone is applied to raw range.
+        InputDevice.MotionRange range=device==null?null:device.getMotionRange(axis,event.getSource());
+        return m.value(role,range==null?0:HardwareControls.axis(event.getAxisValue(axis),Math.max(m.deadZone,Math.min(.5f,range.getFlat()))));
+    }
+    private void mappedButton(int device,int owner,int physical,int fallback,boolean down,InputMapping m){int action=m.action(physical,fallback);if(action>=0&&action<InputActions.MODE)controls.key(device,owner,action,down);}
     boolean motion(MotionEvent event){
         if(!active||!host.ready())return false;
         if(mouseSource(event.getSource()))return mouse(event,false);
         if(!controller(event.getSource())||event.getActionMasked()!=MotionEvent.ACTION_MOVE)return false;
-        int device=event.getDeviceId();float x=axis(event,MotionEvent.AXIS_X,false),y=axis(event,MotionEvent.AXIS_Y,false);
-        float hatX=axis(event,MotionEvent.AXIS_HAT_X,false),hatY=axis(event,MotionEvent.AXIS_HAT_Y,false);
+        int device=event.getDeviceId();InputMapping m=mapping(event.getDevice());float x=mappedAxis(event,m,InputMapping.MOVE_X),y=mappedAxis(event,m,InputMapping.MOVE_Y);
+        float hatX=mappedAxis(event,m,InputMapping.HAT_X),hatY=mappedAxis(event,m,InputMapping.HAT_Y);
         if(!host.playing()){menuSticks.put(device,new float[]{x!=0?x:hatX,y!=0?y:hatY});return true;}
-        controls.key(device,-7,81,hatX<-.25f);controls.key(device,-8,69,hatX>.25f);controls.key(device,-9,77,hatY<-.25f);controls.key(device,-10,88,hatY>.25f);
-        float rx=axis(event,MotionEvent.AXIS_Z,false),ry=axis(event,MotionEvent.AXIS_RZ,false);
-        if(event.getDevice()!=null&&event.getDevice().getMotionRange(MotionEvent.AXIS_Z,event.getSource())==null){rx=axis(event,MotionEvent.AXIS_RX,false);ry=axis(event,MotionEvent.AXIS_RY,false);}
-        controls.stick(device,x,y,rx,ry,Math.max(axis(event,MotionEvent.AXIS_LTRIGGER,true),axis(event,MotionEvent.AXIS_BRAKE,true)),Math.max(axis(event,MotionEvent.AXIS_RTRIGGER,true),axis(event,MotionEvent.AXIS_GAS,true)));return true;
+        mappedButton(device,-7,KeyEvent.KEYCODE_DPAD_LEFT,81,hatX<-.25f,m);mappedButton(device,-8,KeyEvent.KEYCODE_DPAD_RIGHT,69,hatX>.25f,m);mappedButton(device,-9,KeyEvent.KEYCODE_DPAD_UP,77,hatY<-.25f,m);mappedButton(device,-10,KeyEvent.KEYCODE_DPAD_DOWN,88,hatY>.25f,m);
+        controls.key(device,-1,65,x<-.25f);controls.key(device,-2,68,x>.25f);controls.key(device,-3,87,y<-.25f);controls.key(device,-4,83,y>.25f);
+        mappedButton(device,-5,KeyEvent.KEYCODE_BUTTON_L2,1002,mappedAxis(event,m,InputMapping.AIM)>.25f,m);mappedButton(device,-6,KeyEvent.KEYCODE_BUTTON_R2,1000,mappedAxis(event,m,InputMapping.FIRE)>.25f,m);
+        controls.look(device,mappedAxis(event,m,InputMapping.LOOK_X)*m.sensitivity,mappedAxis(event,m,InputMapping.LOOK_Y)*m.sensitivity);return true;
     }
     boolean mouse(MotionEvent event,boolean captured){
         if(!active||!host.ready())return false;int action=event.getActionMasked(),device=event.getDeviceId();
@@ -137,5 +161,5 @@ final class HardwareInput implements InputManager.InputDeviceListener {
     private void mouseLook(float dx,float dy){remainderX+=dx;remainderY+=dy;int x=(int)remainderX,y=(int)remainderY;remainderX-=x;remainderY-=y;if((x!=0||y!=0)&&!mouseSink.send(1,Math.max(-4096,Math.min(4096,x)),Math.max(-4096,Math.min(4096,y))))reset();}
     @Override public void onInputDeviceAdded(int id){}
     @Override public void onInputDeviceChanged(int id){onInputDeviceRemoved(id);}
-    @Override public void onInputDeviceRemoved(int id){controls.remove(id);menuSticks.remove(id);boolean held=!menuButtons.isEmpty();menuButtons.removeIf(owner->owner.startsWith(id+":"));if(held&&menuButtons.isEmpty())host.pointer(2,(int)cursorX,(int)cursorY);}
+    @Override public void onInputDeviceRemoved(int id){controls.remove(id);mappings.remove(id);menuSticks.remove(id);boolean held=!menuButtons.isEmpty();menuButtons.removeIf(owner->owner.startsWith(id+":"));if(held&&menuButtons.isEmpty())host.pointer(2,(int)cursorX,(int)cursorY);}
 }

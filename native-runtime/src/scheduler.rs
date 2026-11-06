@@ -127,7 +127,7 @@ pub(super) fn run(store:&mut Store<Host>,instance:&Instance,limit:u32,fuel:u64,p
         if let Some(control)=store.data().control.as_ref(){control.frame(store.data().scheduler.frames,store.data().graphics.as_ref().map(|graphics|graphics.draw_calls).unwrap_or(0),presented);}
         if store.data().scheduler.frames%30==0{progress.frame_record(&format!("main-loop-completed={}",store.data().scheduler.frames));}
         if store.data().scheduler.save_timer.is_some_and(|due|due<=Instant::now()) {
-            if let Some(filesystem)=store.data_mut().filesystem.as_mut(){if filesystem.report().saves.is_some_and(|saves|saves.dirty){filesystem.sync_saves()?;}}
+            if let Some(filesystem)=store.data_mut().filesystem.as_mut(){if filesystem.saves_are_dirty(){filesystem.sync_saves()?;}}
             store.data_mut().scheduler.save_timer=Some(Instant::now()+Duration::from_secs(1));
         }
         let maintenance_us=maintenance_start.elapsed().as_micros();let scheduler=&store.data().scheduler;

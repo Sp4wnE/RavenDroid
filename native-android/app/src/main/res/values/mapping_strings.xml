@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ui_add_button">+ Add button</string>
+    <string name="ui_remove_button">Remove button</string>
+    <string name="ui_mapping_title">Physical input mapping</string>
+    <string name="ui_mapping_connect">Connect a gamepad or keyboard, then open this screen again.</string>
+    <string name="ui_mapping_device">Choose an input device</string>
+    <string name="ui_mapping_hint">Changes save for this device only. Bind a button, or move a stick to see its Android axis name. Select the axis for each role below. Menu mode moves a cursor; use Select / F12 to enable game controls.</string>
+    <string name="ui_mapping_bind">Bind a button / key</string>
+    <string name="ui_mapping_action">Choose the game action</string>
+    <string name="ui_mapping_press">Press and release the button on the selected device. Back cancels.</string>
+    <string name="ui_mapping_deadzone">Stick dead zone</string>
+    <string name="ui_mapping_invert">Axis direction</string>
+    <string-array name="mapping_axes"><item>Movement left / right</item><item>Movement forward / back</item><item>Look left / right</item><item>Look up / down</item><item>Aim trigger</item><item>Fire trigger</item><item>D-pad left / right</item><item>D-pad up / down</item></string-array>
+    <string name="ui_failure_title">Game could not continue</string>
+    <string name="ui_failure_graphics">The report mentions a graphics error. Required OpenGL ES or robust-access support may be unavailable, or a shader/driver operation failed. Lower resolution can help memory pressure but cannot add missing driver features. Copy the report for diagnosis.</string>
+    <string name="ui_failure_memory">The report indicates a possible memory shortage. Close other games, choose a lower resolution and reduce bots in the game. Copy the report if it happens again.</string>
+    <string name="ui_failure_storage">There is not enough free storage. Free some space, then prepare / verify the game files in the launcher.</string>
+    <string name="ui_failure_runtime">The native runtime or its matching game cache could not load. Use the official APK for the supported ABI and prepare / verify the game files. Copy the report if it persists.</string>
+    <string name="ui_failure_unknown">The session ended unexpectedly. The cause is not yet known. Copy the report and include the device model and the stage where it stopped. Nothing is uploaded automatically.</string>
+    <string name="ui_mapping_pair">%1$s · %2$s</string>
+    <string name="ui_mapping_arrow">%1$s → %2$s</string>
+</resources>

@@ -8,6 +8,7 @@ final class ControlPreferences {
     static ControlConfig load(Context context,boolean vehicle){
         SharedPreferences p=context.getSharedPreferences("controls",Context.MODE_PRIVATE);ControlConfig c=new ControlConfig(vehicle);
         c.sensitivity=p.getFloat("sensitivity",1);c.aimSensitivity=p.getFloat("aimSensitivity",.55f);c.scale=p.getFloat("scale",1);c.opacity=p.getFloat("opacity",.62f);c.invertY=p.getBoolean("invertY",false);c.aimToggle=p.getBoolean("aimToggle",true);c.sprintToggle=p.getBoolean("sprintToggle",true);c.sanitize();
+        try{String extra=p.getString(c.layoutPrefix()+"extra","[]");if(extra.length()<=2048){org.json.JSONArray a=new org.json.JSONArray(extra);for(int i=0;i<Math.min(32,a.length());i++)c.add(a.optInt(i,-1));}}catch(org.json.JSONException ignored){}
         for(ControlLayout.Button b:c.buttons){String k=c.layoutPrefix()+b.action+".";
             // Preserve the user's old crouch position after correcting C to Ctrl.
             if(!vehicle&&b.action==17&&!p.contains(k+"x"))k="hud1.67.";
@@ -30,7 +31,7 @@ final class ControlPreferences {
             context.getSharedPreferences("controls",Context.MODE_PRIVATE).edit().putFloat("sensitivity",c.sensitivity).putFloat("aimSensitivity",c.aimSensitivity).putFloat("scale",c.scale).putFloat("opacity",c.opacity).putBoolean("invertY",invert.isChecked()).putBoolean("aimToggle",aim.isChecked()).putBoolean("sprintToggle",sprint.isChecked()).apply();if(changed!=null)changed.run();
         }).show();
     }
-    static void saveLayout(Context context,ControlConfig c){SharedPreferences.Editor e=context.getSharedPreferences("controls",Context.MODE_PRIVATE).edit();for(ControlLayout.Button b:c.buttons){String k=c.layoutPrefix()+b.action+".";e.putFloat(k+"x",b.x).putFloat(k+"y",b.y).putFloat(k+"r",b.r).putFloat(k+"alpha",b.opacity);}if(!c.vehicle)e.putFloat("hud1.joy.x",c.joyX).putFloat("hud1.joy.y",c.joyY).putFloat("hud1.joy.size",c.joySize).putFloat("hud1.joy.alpha",c.joyOpacity);e.apply();}
+    static void saveLayout(Context context,ControlConfig c){SharedPreferences.Editor e=context.getSharedPreferences("controls",Context.MODE_PRIVATE).edit();org.json.JSONArray extras=new org.json.JSONArray();for(int i=0;i<c.buttons.length;i++){ControlLayout.Button b=c.buttons[i];if(i>=ControlLayout.defaults(c.vehicle).length)extras.put(b.action);String k=c.layoutPrefix()+b.action+".";e.putFloat(k+"x",b.x).putFloat(k+"y",b.y).putFloat(k+"r",b.r).putFloat(k+"alpha",b.opacity);}e.putString(c.layoutPrefix()+"extra",extras.toString());if(!c.vehicle)e.putFloat("hud1.joy.x",c.joyX).putFloat("hud1.joy.y",c.joyY).putFloat("hud1.joy.size",c.joySize).putFloat("hud1.joy.alpha",c.joyOpacity);e.apply();}
     interface Change{void set(float value);}
     static void slider(Context context,LinearLayout root,String name,float value,float min,float max,Change change){
         TextView label=new TextView(context);root.addView(label);SeekBar bar=new SeekBar(context);bar.setMax(100);bar.setProgress(Math.round((value-min)*100/(max-min)));root.addView(bar);

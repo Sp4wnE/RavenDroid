@@ -23,13 +23,20 @@ final class GameControlView extends View {
         if(selected<-1||(vehicle&&selected<0))return;
         ControlConfig c=controls.config;android.widget.LinearLayout body=new android.widget.LinearLayout(getContext());body.setOrientation(android.widget.LinearLayout.VERTICAL);body.setPadding(28,12,28,12);
         if(selected<0){ControlPreferences.slider(getContext(),body,getContext().getString(R.string.ui_joystick_size_da33f),c.joySize,.6f,1.6f,v->{c.joySize=v;placeJoy(c,c.joyX,c.joyY);invalidate();});ControlPreferences.slider(getContext(),body,getContext().getString(R.string.ui_opacity_67e55),c.joyOpacity,.1f,1,v->{c.joyOpacity=v;invalidate();});}
-        else{ControlLayout.Button b=c.buttons[selected];float base=ControlLayout.defaults(vehicle)[selected].r;ControlPreferences.slider(getContext(),body,getContext().getString(R.string.ui_button_size_cfbb1),b.r/base,20/base,100/base,v->{b.r=v*base;ControlLayout.place(b,b.x,b.y,c.scale);invalidate();});ControlPreferences.slider(getContext(),body,getContext().getString(R.string.ui_opacity_67e55),b.opacity,.1f,1,v->{b.opacity=v;invalidate();});}
-        new android.app.AlertDialog.Builder(getContext()).setTitle(selected<0?"Joystick":buttonLabels.getOrDefault(c.buttons[selected].label,c.buttons[selected].label)).setView(body).setPositiveButton(getContext().getString(R.string.ui_ok_2dfaa),null).show();
+        else{ControlLayout.Button b=c.buttons[selected];float base=selected<ControlLayout.defaults(vehicle).length?ControlLayout.defaults(vehicle)[selected].r:36;ControlPreferences.slider(getContext(),body,getContext().getString(R.string.ui_button_size_cfbb1),b.r/base,20/base,100/base,v->{b.r=v*base;ControlLayout.place(b,b.x,b.y,c.scale);invalidate();});ControlPreferences.slider(getContext(),body,getContext().getString(R.string.ui_opacity_67e55),b.opacity,.1f,1,v->{b.opacity=v;invalidate();});}
+        android.app.AlertDialog.Builder dialog=new android.app.AlertDialog.Builder(getContext()).setTitle(selected<0?"Joystick":buttonLabels.getOrDefault(c.buttons[selected].label,c.buttons[selected].label)).setView(body).setPositiveButton(getContext().getString(R.string.ui_ok_2dfaa),null);
+        if(selected>=ControlLayout.defaults(vehicle).length)dialog.setNeutralButton(R.string.ui_remove_button,(d,w)->{c.remove(selected);selected=-2;invalidate();});dialog.show();
+    }
+    private void addButton(){
+        java.util.ArrayList<Integer> actions=new java.util.ArrayList<>();java.util.ArrayList<String> labels=new java.util.ArrayList<>();
+        for(int value:InputActions.touchValues()){boolean exists=false;for(ControlLayout.Button b:controls.config.buttons)if(b.action==value)exists=true;if(!exists){actions.add(value);labels.add(InputActions.label(value));}}
+        new android.app.AlertDialog.Builder(getContext()).setTitle(R.string.ui_add_button).setItems(labels.toArray(new String[0]),(dialog,index)->{if(controls.config.add(actions.get(index))){selected=controls.config.buttons.length-1;invalidate();}}).setNegativeButton(android.R.string.cancel,null).show();
     }
     private void placeJoy(ControlConfig c,float x,float y){float r=84*c.scale*c.joySize;c.joyX=ControlConfig.clamp(x,r,1280-r);c.joyY=ControlConfig.clamp(y,90+r,720-r);controls.joyX=c.joyX;controls.joyY=c.joyY;}
     private boolean editTouch(MotionEvent e){int a=e.getActionMasked(),i=e.getActionIndex();float px=x(e,i),py=y(e,i);ControlConfig c=controls.config;
         if(a==MotionEvent.ACTION_DOWN){
-            if(py<78){if(px<200)finishEdit(true);else if(px>1080)finishEdit(false);else if(px>820){ControlConfig defaults=new ControlConfig(vehicle);for(int j=0;j<c.buttons.length;j++){ControlLayout.Button b=c.buttons[j],d=defaults.buttons[j];b.x=d.x;b.y=d.y;b.r=d.r;b.opacity=1;}c.joySize=1;c.joyOpacity=.62f;placeJoy(c,180,550);invalidate();}else if(px>540)editOptions();else if(px>210)switchProfile();return true;}
+            if(py>=78&&py<140&&px>1000){addButton();return true;}
+            if(py<78){if(px<200)finishEdit(true);else if(px>1080)finishEdit(false);else if(px>820){c.buttons=ControlLayout.copyDefaults(vehicle);selected=-1;c.joySize=1;c.joyOpacity=.62f;placeJoy(c,180,550);invalidate();}else if(px>540)editOptions();else if(px>210)switchProfile();return true;}
             ControlLayout.Button hit=c.hit(px,py);selected=-2;
             if(hit!=null){for(int j=0;j<c.buttons.length;j++)if(c.buttons[j]==hit)selected=j;dragX=px-hit.x;dragY=py-hit.y;}
             else if(!vehicle&&Math.hypot(px-c.joyX,py-c.joyY)<=84*c.scale*c.joySize){selected=-1;dragX=px-c.joyX;dragY=py-c.joyY;}
@@ -69,6 +76,7 @@ final class GameControlView extends View {
         super.onDraw(canvas);canvas.save();canvas.scale(getWidth()/1280f,getHeight()/720f);
         if(editing){pill(canvas,16,195,getContext().getString(R.string.ui_save_01b2b));pill(canvas,210,510,vehicle?getContext().getString(R.string.ui_vehicle_on_foot_e5ddf):getContext().getString(R.string.ui_on_foot_vehicle_fa3fd));pill(canvas,540,810,getContext().getString(R.string.ui_size_opacity_267f4));pill(canvas,825,1070,getContext().getString(R.string.ui_reset_4a8fc));pill(canvas,1085,1264,getContext().getString(R.string.ui_cancel_20763));text(canvas,getContext().getString(R.string.ui_drag_buttons_tap_to_adjust_8f616),640,108,17,0xffeff5ff);}
         else{pill(canvas,16,260,playing?getContext().getString(R.string.ui_touch_menus_a4ea9):getContext().getString(R.string.ui_enable_controls_580d7));canvas.save();canvas.translate(0,70);pill(canvas,16,260,vehicle?getContext().getString(R.string.ui_vehicle_on_foot_e5ddf):getContext().getString(R.string.ui_on_foot_vehicle_fa3fd));canvas.restore();pill(canvas,1060,1264,getContext().getString(R.string.ui_options_a13f4));}
+        if(editing){canvas.save();canvas.translate(0,70);pill(canvas,1010,1264,getContext().getString(R.string.ui_add_button));canvas.restore();}
         if(playing||editing){
             int alpha=Math.round(controls.config.opacity*255);float scale=controls.config.scale;
             for(ControlLayout.Button button:controls.config.buttons){boolean held=controls.held(button.action);paint.setStyle(Paint.Style.FILL);paint.setColor((Math.round(alpha*button.opacity)<<24)|(held?0x2a8bda:0x142030));canvas.drawCircle(button.x,button.y,button.r*scale,paint);

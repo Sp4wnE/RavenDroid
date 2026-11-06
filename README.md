@@ -9,7 +9,7 @@
 
 Android 10+ · ARM64 · Wasmtime AOT · OpenGL ES 3 · Rust + Java
 
-[**Download the full APK**](../../releases/download/v0.21/ravendroid-v0.21-full.apk) · [Release notes](../../releases/tag/v0.21) · [Build guide](docs/BUILDING.md)
+[**Download the full APK**](../../releases/download/v0.22/ravendroid-v0.22-full.apk) · [Release notes](../../releases/tag/v0.22) · [Build guide](docs/BUILDING.md)
 
 </div>
 
@@ -35,8 +35,9 @@ Allow approximately **1.5GB of additional free storage after installation** for 
 - Native OpenGL ES rendering and AAudio output.
 - Movement, aiming, firing, crouching, reload and loadout controls.
 - Separate, manually selected infantry and vehicle layouts.
-- Drag controls to reposition them; adjust size, opacity and sensitivity; save layouts.
+- Add, remove and reposition custom touch buttons. Adjust size and opacity in each layout.
 - Keyboard, mouse and gamepad input, including captured mouse look and a gamepad menu cursor. **F12 / Select** switches between menu and gameplay controls.
+- Per-device keyboard and controller mappings, adjustable stick axes, dead zones and sensitivity.
 - Selectable **640×360, 960×540 or 1280×720** render resolution for the next game session.
 - Size and SHA-256 verification with atomic data installation.
 - Offline full APK with bounded streaming preparation.
@@ -57,7 +58,7 @@ This is a native host for a pinned WebAssembly build, not a rebuild from the ori
 
 ## Validation and limitations
 
-The 0.21 update passed 42 Java tests and targeted viewport checks. Earlier full-size data preparation passed with 256 MiB of Java heap. APK signing, artifact hashes, profile matching and 16 KiB native alignment are checked before release. The native engine's earlier validation included 88 runtime and 7 GPU tests.
+The 0.22 update passed 74 Rust tests and 47 Java tests. Earlier full-size data preparation passed with 256 MiB of Java heap. APK signing, artifact hashes, profile matching and 16 KiB native alignment are checked before release. The native engine's earlier validation included 88 runtime and 7 GPU tests.
 
 Actual performance depends on the device, scene and settings. Universal rendering correctness and stable 60 FPS are not claimed. Vehicle profiles are selected manually; complete vehicle/aircraft gameplay coverage and background/lock-screen resume are not established.
 
@@ -73,6 +74,6 @@ See [validation](docs/VALIDATION.md), [controls](docs/CONTROLS.md), [architectur
 | `app/` | Separate legacy WebView prototype |
 | `docs/` | Concise developer and user documentation |
 
-Game payloads, SDKs, dependencies, local reports and generated builds are excluded from Git. The full installable package is available through the private release. Open-source dependency notices are included in the APK.
+Game payloads, SDKs, dependencies, local reports and generated builds are excluded from Git. The full installable package is available through GitHub Releases. Open-source dependency notices are included in the APK.
 
 https://github.com/degloved-net/Ravenfield web port files was taken from here.

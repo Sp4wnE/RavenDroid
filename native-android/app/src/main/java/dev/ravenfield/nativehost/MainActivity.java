@@ -38,6 +38,8 @@ public final class MainActivity extends Activity {
     private volatile boolean busy;
     private boolean runtimeLoaded;
     private boolean bundledPreparationStarted;
+    // GameActivity uses this same explicit name, including in the isolated test applicationId.
+    private android.content.SharedPreferences sessionPreferences(){return getSharedPreferences("MainActivity",MODE_PRIVATE);}
     private static native String runProbeNative(String artifactPath, String logPath, String dataPath);
     private static native String runSmokeNative(String artifactPath, String logPath);
     private static native String runGraphicsNative(String artifactPath, String logPath, String dataPath);
@@ -47,29 +49,29 @@ public final class MainActivity extends Activity {
         super.onCreate(state);
         buildLauncher();
         if(state==null)PortNotice.show(this);
-        String previous=getPreferences(MODE_PRIVATE).getString("lastReport","");
-        boolean pending=getPreferences(MODE_PRIVATE).getBoolean("pending",false);
+        String previous=sessionPreferences().getString("lastReport","");
+        boolean pending=sessionPreferences().getBoolean("pending",false);
         setReport(previous.isEmpty()?deviceReport():previous);
         try { System.loadLibrary("ravenfield_native_host"); runtimeLoaded=true; }
-        catch(LinkageError error){setReport("Unable to load ARM64 native runtime: "+error+"\n"+deviceReport());}
+        catch(LinkageError error){setReport("Unable to load ARM64 native runtime: "+error+"\n"+deviceReport());nativePoll.post(()->FailureDialog.show(this,report,null));}
         setBusy(pending);
         if(pending&&runtimeLoaded&&isNativeBusy()){waitForNative();}
         else if(pending){
             setReport("Reading native crash details from the previous test…");
             new Thread(()->{
                 String recovered="The process ended before the previous native test completed.\n"+deviceReport()+"\n"+exitReport()+"\nLast native stages:\n"+readProgress()+"\n"+previous;
-                getPreferences(MODE_PRIVATE).edit().putBoolean("pending",false).putString("lastReport",recovered).putString("lastCrashReport",recovered).commit();
-                runOnUiThread(()->{if(isDestroyed())return;setReport(recovered);setBusy(false);prepareBundledGame();});
+                sessionPreferences().edit().putBoolean("pending",false).putString("lastReport",recovered).putString("lastCrashReport",recovered).commit();
+                runOnUiThread(()->{if(isDestroyed())return;setReport(recovered);setBusy(false);FailureDialog.show(this,recovered,null);prepareBundledGame();});
             },"RavenCrashReader").start();
         }
         prepareBundledGame();
     }
-    @Override protected void onResume(){super.onResume();if(output!=null&&runtimeLoaded){if(isNativeBusy())waitForNative();else if(!busy)setReport(getPreferences(MODE_PRIVATE).getString("lastReport",report));}}
+    @Override protected void onResume(){super.onResume();if(output!=null&&runtimeLoaded){if(isNativeBusy())waitForNative();else if(!busy)setReport(sessionPreferences().getString("lastReport",report));}}
     @Override protected void onPause(){nativePoll.removeCallbacksAndMessages(null);super.onPause();}
     private void waitForNative(){
         nativePoll.removeCallbacksAndMessages(null);
         if(isNativeBusy()){setBusy(true);setReport("A native session is running or stopping safely…");nativePoll.postDelayed(this::waitForNative,500);}
-        else{setBusy(false);setReport(getPreferences(MODE_PRIVATE).getString("lastReport",report));prepareBundledGame();}
+        else{setBusy(false);setReport(sessionPreferences().getString("lastReport",report));prepareBundledGame();}
     }
     private void prepareBundledGame(){
         if(!BuildConfig.BUNDLED_GAME_DATA||bundledPreparationStarted||busy||!runtimeLoaded)return;
@@ -128,7 +130,7 @@ public final class MainActivity extends Activity {
                 long prepareMs=android.os.SystemClock.elapsedRealtime()-prepareStarted;
                 try(FileOutputStream clear=new FileOutputStream(progressFile())){clear.getFD().sync();}
                 String started=deviceReport()+"\nTest="+(small?"small-aot":render?"unity-native-gles":"unity-aot-filesystem")+" artifact_bytes="+artifact.length()+" asset_prepare_ms="+prepareMs+" data_verify_ms="+dataVerifyMs+" started="+new Date();
-                getPreferences(MODE_PRIVATE).edit().putBoolean("pending",true).putString("lastReport",started).commit();
+                sessionPreferences().edit().putBoolean("pending",true).putString("lastReport",started).commit();
                 runOnUiThread(()->setReport(started+"\nLoading precompiled code…"));
                 String nativeAnswer=small?runSmokeNative(artifact.getAbsolutePath(),progressFile().getAbsolutePath()):render?runGraphicsNative(artifact.getAbsolutePath(),progressFile().getAbsolutePath(),gameDataFile().getAbsolutePath()):runProbeNative(artifact.getAbsolutePath(),progressFile().getAbsolutePath(),gameDataFile().getAbsolutePath());
                 answer=started+"\n"+nativeAnswer+"\nNative stages:\n"+readProgress();
@@ -143,7 +145,7 @@ public final class MainActivity extends Activity {
                 }
             }catch(Exception|LinkageError error){answer="Native test failed: "+error+"\n"+deviceReport()+"\n"+readProgress();}
             final String finalAnswer=answer;
-            getPreferences(MODE_PRIVATE).edit().putBoolean("pending",false).putString("lastReport",finalAnswer).commit();
+            sessionPreferences().edit().putBoolean("pending",false).putString("lastReport",finalAnswer).commit();
             runOnUiThread(()->{if(isDestroyed())return;setReport(finalAnswer);setBusy(false);});
         },"RavenNativeProbe",16*1024*1024).start();
     }
@@ -173,7 +175,7 @@ public final class MainActivity extends Activity {
             try{
                 GameDataImporter.Profile profile=dataProfile();
                 long started=android.os.SystemClock.elapsedRealtime();
-                if(!GameDataImporter.matches(gameDataFile(),profile)){
+                if(!NativeAssets.verifyGameData(gameDataFile(),profile,true)){
                     long reserve=16L*1024*1024;
                     if(bundled){
                         try(InputStream manifest=getAssets().open("native/manifest.json")){
@@ -190,7 +192,7 @@ public final class MainActivity extends Activity {
                 }
                 answer=(bundled?getString(R.string.ui_bundled_game_ready)+"\n":"")+"Game data ready: "+profile.bytes+" bytes; SHA-256 verified.\nImport/verification time: "+(android.os.SystemClock.elapsedRealtime()-started)+" ms.\nThe Unity + filesystem test is available under Help.";
             }catch(Exception error){answer="Could not import game data: "+error+"\n"+(bundled?getString(R.string.ui_bundled_game_failed):"If the installed APK cannot be read, use Choose file to select your game content APK or ZIP.");}
-            final String result=answer;getPreferences(MODE_PRIVATE).edit().putString("lastReport",result).commit();
+            final String result=answer;sessionPreferences().edit().putString("lastReport",result).commit();
             runOnUiThread(()->{if(isDestroyed())return;setReport(result);setBusy(false);});
         },"RavenDataImport").start();
     }
@@ -222,7 +224,7 @@ public final class MainActivity extends Activity {
         return destination;
     }
     private String readProgress(){
-        try(InputStream input=new FileInputStream(progressFile())){return new String(readBounded(input,128*1024),StandardCharsets.UTF_8);}
+        try(java.io.RandomAccessFile input=new java.io.RandomAccessFile(progressFile(),"r")){long size=input.length();int count=(int)Math.min(size,128*1024);byte[] tail=new byte[count];input.seek(size-count);input.readFully(tail);return new String(tail,StandardCharsets.UTF_8);}
         catch(IOException error){return "No native progress log: "+error.getMessage();}
     }
     private static byte[] readBounded(InputStream input,int maximum)throws IOException{

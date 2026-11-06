@@ -82,15 +82,43 @@ impl Context{
             let extensions=CStr::from_ptr(extensions).to_string_lossy();
             let has=|name:&str|extensions.split_ascii_whitespace().any(|value|value==name);
             ensure!((major>1||(major==1&&minor>=5))||has("EGL_KHR_create_context"),"ES3 robust context creation unavailable");
-            let attributes=[0x3033,if this.window.is_some(){5}else{1},0x3040,0x40,0x3024,8,0x3023,8,0x3022,8,0x3021,8,0x3025,24,0x3026,8,0x3038];
-            let mut count=0;ensure!(eglChooseConfig(this.display,attributes.as_ptr(),&mut this.config,1,&mut count)!=0&&count==1,"Choose EGL ES3 pbuffer config: {:#x}",eglGetError());
-            if this.window.is_some(){let mut samples=0;ensure!(eglGetConfigAttrib(this.display,this.config,0x3031,&mut samples)!=0&&samples==0,"Live blit requires a single-sample EGL config");}
+            let window = this.window.is_some();
+            let mut attributes = [
+                0x3033, if window { 5 } else { 1 }, 0x3040, 0x40,
+                0x3024, 8, 0x3023, 8, 0x3022, 8, 0x3021, 8,
+                0x3025, 24, 0x3026, 8, 0x3032, 0, 0x3038,
+            ];
+            let mut count = 0;
+            let mut chosen = eglChooseConfig(this.display, attributes.as_ptr(), &mut this.config, 1, &mut count) != 0 && count == 1;
+            let single_sample = |config| {
+                let mut samples = 0;
+                eglGetConfigAttrib(this.display, config, 0x3031, &mut samples) != 0 && samples == 0
+            };
+            if window && chosen && !single_sample(this.config) { chosen = false; }
+            if window && !chosen {
+                // The window receives only the color blit. Depth and stencil
+                // live on the guest framebuffer, and this path never uses a pbuffer.
+                attributes[1] = 4; // EGL_WINDOW_BIT
+                attributes[11] = 0; // Alpha is optional on the presentation surface.
+                attributes[13] = 0;
+                attributes[15] = 0;
+                chosen = eglChooseConfig(this.display, attributes.as_ptr(), &mut this.config, 1, &mut count) != 0 && count == 1;
+            }
+            ensure!(chosen, "Choose EGL ES3 config: {:#x}", eglGetError());
+            ensure!(!window || single_sample(this.config), "Live blit requires a single-sample EGL config");
             ensure!(eglBindAPI(0x30A0)!=0,"Bind EGL OpenGL ES API");
-            // EGL 1.5 core robustness attributes; EXT uses different tokens.
-            let context_attributes=if major>1||(major==1&&minor>=5){[0x3098,3,0x31B2,1,0x31BD,0x31BF,0x3038]}
-                else{ensure!(has("EGL_EXT_create_context_robustness"),"EGL robustness extension unavailable");[0x3098,3,0x30BF,1,0x3138,0x31BF,0x3038]};
-            this.context=eglCreateContext(this.display,this.config,null_mut(),context_attributes.as_ptr());
-            ensure!(!this.context.is_null(),"Create robust EGL ES3 context: {:#x}",eglGetError());
+            let core = [0x3098, 3, 0x31B2, 1, 0x31BD, 0x31BF, 0x3038];
+            let ext = [0x3098, 3, 0x30BF, 1, 0x3138, 0x31BF, 0x3038];
+            let mut context_error = 0;
+            if major > 1 || (major == 1 && minor >= 5) {
+                this.context = eglCreateContext(this.display, this.config, null_mut(), core.as_ptr());
+                if this.context.is_null() { context_error = eglGetError(); }
+            }
+            if this.context.is_null() && has("EGL_EXT_create_context_robustness") {
+                this.context = eglCreateContext(this.display, this.config, null_mut(), ext.as_ptr());
+                if this.context.is_null() { context_error = eglGetError(); }
+            }
+            ensure!(!this.context.is_null(), "Create robust EGL ES3 context: {context_error:#x}");
             this.surface=if let Some(window)=this.window.as_ref(){
                 let mut format=0;ensure!(eglGetConfigAttrib(this.display,this.config,0x302E,&mut format)!=0,"Query EGL native window format");
                 ensure!(ANativeWindow_setBuffersGeometry(window.raw,width,height,format)==0,"Set Android surface geometry");

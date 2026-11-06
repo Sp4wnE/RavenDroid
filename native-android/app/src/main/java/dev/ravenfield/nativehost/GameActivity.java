@@ -71,7 +71,7 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
             public void cursor(boolean visible,int x,int y){controls.cursor(visible,x,y);}
         });
         controls.setModeListener(()->{if(hardware!=null)hardware.reset();});
-        try{System.loadLibrary("ravenfield_native_host");runtimeReady=true;}catch(LinkageError error){status.setText(error.toString());wantsRun=false;finish();}
+        try{System.loadLibrary("ravenfield_native_host");runtimeReady=true;}catch(LinkageError error){status.setText(error.toString());wantsRun=false;getSharedPreferences("MainActivity",MODE_PRIVATE).edit().putString("lastReport",error.toString()).apply();FailureDialog.show(this,error.toString(),this::finish);}
     }
     private void escape(){if(session!=0){gameInputNative(session,0,27,1);gameInputNative(session,0,27,0);}}
     private void showPause(){
@@ -79,11 +79,12 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
         if(controls.cancelEdit())return;
         boolean wasPlaying=controls.playing();controls.setPlaying(false);if(wasPlaying)escape();
         new android.app.AlertDialog.Builder(this).setTitle(GameActivity.this.getString(R.string.ui_ravendroid_b77d3))
-            .setItems(new String[]{GameActivity.this.getString(R.string.ui_resume_game_a6329),GameActivity.this.getString(R.string.ui_touch_menus_805ee),GameActivity.this.getString(R.string.ui_configure_controls_d0cf0),GameActivity.this.getString(R.string.ui_edit_button_layout_edaa6),GameActivity.this.getString(R.string.ui_return_to_launcher_2a9bb)},(dialog,index)->{
+            .setItems(new String[]{GameActivity.this.getString(R.string.ui_resume_game_a6329),GameActivity.this.getString(R.string.ui_touch_menus_805ee),GameActivity.this.getString(R.string.ui_configure_controls_d0cf0),GameActivity.this.getString(R.string.ui_edit_button_layout_edaa6),GameActivity.this.getString(R.string.ui_return_to_launcher_2a9bb),GameActivity.this.getString(R.string.ui_mapping_title)},(dialog,index)->{
                 if(index==0){controls.resumePlaying(wasPlaying);if(wasPlaying)escape();}
                 else if(index==2)ControlPreferences.show(this,()->{controls.reload();controls.resumePlaying(wasPlaying);if(wasPlaying)escape();});
                 else if(index==3)controls.edit(()->{controls.resumePlaying(wasPlaying);if(wasPlaying)escape();});
                 else if(index==4)exitToLauncher();
+                else if(index==5)MappingDialog.show(this,()->{hardware.reset();controls.resumePlaying(wasPlaying);if(wasPlaying)escape();});
             }).setCancelable(false).show();
     }
     @Override public void onBackPressed(){showPause();}
@@ -105,11 +106,16 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
     @Override protected void onResume(){super.onResume();if(hardware!=null)hardware.start();audioFocus(audioManager.requestAudioFocus(audioFocus)==android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED);wantsRun=runtimeReady&&!exiting;handler.removeCallbacks(poll);if(wantsRun)handler.post(poll);}
     @Override protected void onPause(){if(hardware!=null)hardware.stop();audioFocus(false);audioManager.abandonAudioFocusRequest(audioFocus);wantsRun=false;handler.removeCallbacks(poll);touch.cancel();if(controls!=null)controls.releaseAll();if(inputMixer!=null)inputMixer.reset();if(session!=0)stopSessionNative(session);super.onPause();}
     @Override protected void onDestroy(){handler.removeCallbacks(poll);if(session!=0)stopSessionNative(session);super.onDestroy();}
-    @Override public void surfaceCreated(SurfaceHolder holder){surfaceReady=true;startIfReady();}
-    @Override public void surfaceChanged(SurfaceHolder holder,int format,int width,int height){}
+    @Override public void surfaceCreated(SurfaceHolder holder) {
+        surfaceReady = false;
+    }
+    @Override public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        surfaceReady = width > 0 && height > 0 && holder.getSurface().isValid();
+        startIfReady();
+    }
     @Override public void surfaceDestroyed(SurfaceHolder holder){surfaceReady=false;touch.cancel();if(controls!=null)controls.releaseAll();if(session!=0)stopSessionNative(session);}
     private void startIfReady(){
-        if(!runtimeReady||!wantsRun||!surfaceReady||running||exiting||isFinishing())return;
+        if(!runtimeReady||!wantsRun||!surfaceReady||!surface.getHolder().getSurface().isValid()||running||exiting||isFinishing())return;
         final long id=createSessionNative();if(id==0){status.setText(GameActivity.this.getString(R.string.ui_waiting_for_the_previous_native_session_to_4b552));return;}
         session=id;audioMutedNative(id,!audioGranted);running=true;firstVisible=0;if(controls!=null)controls.setPlaying(false);final Surface target=surface.getHolder().getSurface();
         getSharedPreferences("MainActivity",MODE_PRIVATE).edit().putBoolean("pending",true).putString("lastReport",GameActivity.this.getString(R.string.ui_preparing_native_game_session_529e8)).commit();
@@ -131,7 +137,7 @@ public final class GameActivity extends Activity implements SurfaceHolder.Callba
                 finally{releaseSessionNative(id);}
             }
             final String result=answer;final boolean requestedStop=stopped;
-            runOnUiThread(()->{session=0;running=false;if(isFinishing()||isDestroyed())return;if(exiting){finish();return;}if(!requestedStop){wantsRun=false;status.setText(GameActivity.this.getString(R.string.ui_the_game_session_ended_return_to_the_launc_1c13d));}else startIfReady();});
+            runOnUiThread(()->{session=0;running=false;if(isFinishing()||isDestroyed())return;if(exiting){finish();return;}if(!requestedStop){wantsRun=false;status.setText(GameActivity.this.getString(R.string.ui_the_game_session_ended_return_to_the_launc_1c13d));FailureDialog.show(this,result,this::finish);}else startIfReady();});
         },"RavenLiveOwner",16*1024*1024).start();
     }
 }
